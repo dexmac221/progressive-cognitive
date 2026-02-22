@@ -29,70 +29,136 @@ class RealModelEvaluator(ModelEvaluator):
         return response.strip()
 
 def main():
-    print("Caricamento del modello Qwen2.5-1.5B e dei pesi LoRA...")
+    print("Loading Qwen2.5-1.5B models for comparative evaluation...")
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     
     # Load tokenizer and model
     model_id = "Qwen/Qwen2.5-1.5B"
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
     
-    base_model = AutoModelForCausalLM.from_pretrained(
+    # 1. Load Progressive Model
+    base_model_prog = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.float16,
         device_map=device,
         trust_remote_code=True
     )
     
-    # Load LoRA adapters and merge them into the base model
-    lora_path = "./local_lora/lora_adapters"
-    if os.path.exists(lora_path):
-        print(f"Caricamento pesi LoRA da {lora_path} e fusione con il modello base...")
-        model = PeftModel.from_pretrained(base_model, lora_path)
-        model = model.merge_and_unload() # Merge weights for actual inference
+    # Try to download from HF Hub if not local
+    lora_path_prog = "./local_lora/lora_adapters"
+    if not os.path.exists(lora_path_prog):
+        try:
+            from huggingface_hub import snapshot_download
+            print("Downloading Progressive LoRA from HF Hub...")
+            lora_path_prog = snapshot_download(repo_id="dexmac/progressive-cognitive-lora")
+        except Exception as e:
+            print(f"Could not download Progressive LoRA: {e}")
+            
+    if os.path.exists(lora_path_prog):
+        print(f"Loading Progressive LoRA weights from {lora_path_prog}...")
+        model_prog = PeftModel.from_pretrained(base_model_prog, lora_path_prog)
+        model_prog = model_prog.merge_and_unload()
     else:
-        print("ATTENZIONE: Pesi LoRA non trovati, uso il modello base.")
-        model = base_model
-        
-    model.eval()
-    print("Modello con LoRA caricato con successo!\n")
+        print("WARNING: Progressive LoRA weights not found.")
+        model_prog = base_model_prog
+    model_prog.eval()
     
-    # Load a fresh base model for comparison
-    print("Caricamento di un nuovo modello base per il confronto...")
-    base_model_only = AutoModelForCausalLM.from_pretrained(
+    # 2. Load Baseline (Flat-LoRA) Model
+    base_model_flat = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.float16,
         device_map=device,
         trust_remote_code=True
     )
-    base_model_only.eval()
-    print("Modello base caricato con successo!\n")
+    
+    # Try to download from HF Hub if not local
+    lora_path_flat = "./baseline_lora_adapters"
+    if not os.path.exists(lora_path_flat):
+        try:
+            from huggingface_hub import snapshot_download
+            print("Downloading Flat-LoRA from HF Hub...")
+            lora_path_flat = snapshot_download(repo_id="dexmac/progressive-cognitive-baseline-lora")
+        except Exception as e:
+            print(f"Could not download Flat-LoRA: {e}")
+            
+    if os.path.exists(lora_path_flat):
+        print(f"Loading Flat-LoRA weights from {lora_path_flat}...")
+        model_flat = PeftModel.from_pretrained(base_model_flat, lora_path_flat)
+        model_flat = model_flat.merge_and_unload()
+    else:
+        print("WARNING: Flat-LoRA weights not found.")
+        model_flat = base_model_flat
+    model_flat.eval()
+    
+    # 3. Load Base Model
+    print("Loading Base model for comparison...")
+    model_base = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        device_map=device,
+        trust_remote_code=True
+    )
+    model_base.eval()
     
     # Configure test (20 samples per category to keep it fast, ~5 mins)
     config = TestConfig(n_samples_per_test=20, device=device, max_new_tokens=100)
     
-    print("Generazione suite di test...")
+    print("Generating test suite...")
     suite = TestSuiteGenerator.generate_all(n=config.n_samples_per_test, seed=config.seed)
     
     total_tests = sum(len(s['tests']) for s in suite.values())
-    print(f"Test generati: {total_tests} in {len(suite)} categorie\n")
+    print(f"Generated tests: {total_tests} in {len(suite)} categories\n")
     
-    # Evaluate the real model (with LoRA)
-    evaluator_lora = RealModelEvaluator('Qwen2.5-1.5B + LoRA Progressivo', config, model, tokenizer)
+    # Evaluate models
+    print("\nEvaluating Progressive Model...")
+    evaluator_prog = RealModelEvaluator('Qwen2.5-1.5B + Progressive LoRA', config, model_prog, tokenizer)
     
-    # Evaluate the base model (without LoRA)
-    print("\nValutazione del modello base (senza LoRA)...")
-    evaluator_base = RealModelEvaluator('Qwen2.5-1.5B (Base)', config, base_model_only, tokenizer)
+    print("\nEvaluating Flat-LoRA Model...")
+    evaluator_flat = RealModelEvaluator('Qwen2.5-1.5B + Flat LoRA', config, model_flat, tokenizer)
+    
+    print("\nEvaluating Base Model...")
+    evaluator_base = RealModelEvaluator('Qwen2.5-1.5B (Base)', config, model_base, tokenizer)
     
     evaluations = {
-        'Qwen2.5-1.5B + LoRA Progressivo': evaluator_lora.evaluate_suite(suite),
+        'Qwen2.5-1.5B + Progressive LoRA': evaluator_prog.evaluate_suite(suite),
+        'Qwen2.5-1.5B + Flat LoRA': evaluator_flat.evaluate_suite(suite),
         'Qwen2.5-1.5B (Base)': evaluator_base.evaluate_suite(suite)
     }
     
     # Generate report
     report = ComparativeReport(evaluations)
     report.generate()
-    report.save('./qwen_cognitive_report.json')
-    print("\nValutazione completata! Risultati salvati in qwen_cognitive_report.json")
+    
+    os.makedirs('./results', exist_ok=True)
+    report.save('./results/qwen_cognitive_report.json')
+    print("\nEvaluation completed! Results saved in results/qwen_cognitive_report.json")
+    
+    # Push results to Hugging Face Hub
+    hf_token = os.environ.get("HF_TOKEN")
+    repo_id = os.environ.get("HF_REPO_ID", "dexmac/progressive-cognitive-results")
+    
+    if hf_token:
+        print(f"\nPushing results to Hugging Face Hub: {repo_id}")
+        try:
+            from huggingface_hub import HfApi
+            api = HfApi(token=hf_token)
+            api.create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
+            api.upload_file(
+                path_or_fileobj='./results/qwen_cognitive_report.json',
+                path_in_repo="qwen_cognitive_report.json",
+                repo_id=repo_id,
+                repo_type="dataset",
+                token=hf_token
+            )
+            print("Successfully pushed results to Hub!")
+            
+            # Pause the space to save money
+            space_id = os.environ.get("SPACE_ID")
+            if space_id:
+                print(f"Pausing space {space_id} to save resources...")
+                api.pause_space(repo_id=space_id)
+        except Exception as e:
+            print(f"Error pushing to hub: {e}")
 
 if __name__ == "__main__":
     main()
