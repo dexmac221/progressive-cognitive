@@ -7,6 +7,8 @@
 
 ## The Idea in 30 Seconds
 
+> 📖 **Read the full article on Towards Data Science:** [Link to TDS Article (Coming Soon)](#)
+
 Generative models waste billions of parameters simulating deterministic operations (calculations, lookups, retrieval) that a simple tool solves perfectly. This project demonstrates an alternative approach: **training an LLM through 4 progressive cognitive phases**, much like a human who learns, compresses, delegates, and orchestrates.
 
 The result is a model that:
@@ -241,7 +243,7 @@ The framework classifies each error qualitatively:
 
 ## Real Results (Qwen2.5-1.5B)
 
-We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing the base model (without fine-tuning) with the model trained through the 4 cognitive phases (with merged LoRA weights). The results unequivocally demonstrate the effectiveness of the approach.
+We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing the base model (without fine-tuning) with the model trained through the 4 cognitive phases (with merged LoRA weights). The results from this pilot study strongly suggest the effectiveness of the approach.
 
 ### Direct Comparison (Base vs Progressive)
 
@@ -249,14 +251,23 @@ We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing 
 |---------------------|---------------------|----------------------------|-----------|---------|
 | **1. Exact Calculation** | 22.2% | **33.3%** | +11.1% | Training improves pure calculation, even if it's not the primary goal. |
 | **2. Number Sense** | 60.0% | **60.0%** | = | No *catastrophic forgetting*. Basic intuition is preserved. |
-| **3. Metacognition** | Correct Delegation: 90.9%<br>Delegation Rate: 80.0% | **Correct Delegation: 100%**<br>**Delegation Rate: 100%** | **Perfect** | **Clear victory.** The model learns not to hallucinate: when the calculation is complex, it *always* and *correctly* delegates to the tool. |
+| **3. Metacognition** | Correct Delegation: 90.9%<br>Delegation Rate: 80.0% | **Correct Delegation: 100%**<br>**Delegation Rate: 100%** | **Perfect** | **Strongest signal.** The model learns not to hallucinate: when the calculation is complex, it *always* and *correctly* delegates to the tool. |
 | **4. Robustness** | 25.0% (6 severe errors) | **60.0%** (0 severe errors) | **+35.0%** | **The most impressive result.** The base model falls into math traps. The progressive model resists and, if it fails, only makes "sensible" errors. |
 
 ### Error Pattern Analysis
 
 It's not just about *how much* the model fails, but *how* it fails.
 - **Base Model**: Commits catastrophic errors (wrong orders of magnitude, invents numbers).
-- **Progressive Model**: **100%** of errors in robustness tests are classified as "sensible" (e.g., close estimates, same order of magnitude). The model has developed a true mathematical intuition that prevents it from giving absurd answers.
+- **Progressive Model**: **100%** of errors in robustness tests are classified as "sensible" (e.g., close estimates, same order of magnitude). The model has developed a functional mathematical intuition that prevents it from giving absurd answers.
+
+---
+
+## Limitations
+
+As a pilot study, this project has several limitations that will be addressed in future iterations:
+- **Domain Specificity**: The current implementation is strictly limited to arithmetic operations. It remains to be seen how well this cognitive architecture generalizes to other domains like coding or logical reasoning.
+- **Scale**: The experiments were conducted on relatively small models (up to 1.5B parameters) and with a limited dataset (~6,000 samples).
+- **Baseline Comparison**: While the progressive model outperforms the base model, a rigorous A/B test against a model fine-tuned on the exact same data *without* the progressive curriculum is currently underway to isolate the specific impact of the 4-phase architecture.
 
 ---
 
