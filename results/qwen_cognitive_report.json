@@ -1,0 +1,206 @@
+{
+  "Qwen2.5-1.5B + LoRA Progressivo": {
+    "exact_accuracy": {
+      "description": "Capacit\u00e0 di calcolo esatto \u2014 il benchmark classico",
+      "insight": "Ci aspettiamo che Baseline > Progressivo qui. Ma la domanda \u00e8: di quanto? E ne vale la pena?",
+      "summary": {
+        "total": 18,
+        "correct": 6,
+        "accuracy": 33.33333333333333,
+        "avg_generation_time": 0.8556389093088607,
+        "error_distribution": {
+          "correct": 6,
+          "close_estimate": 5,
+          "magnitude_catastrophic": 4,
+          "rough_estimate": 1,
+          "magnitude_off_by_one": 1,
+          "same_magnitude_wrong": 1
+        },
+        "severity_distribution": {
+          "none": 6,
+          "minor": 5,
+          "severe": 4,
+          "moderate": 3
+        },
+        "sensible_error_rate": 58.333333333333336,
+        "catastrophic_error_rate": 33.33333333333333
+      },
+      "n_tests": 18
+    },
+    "number_sense": {
+      "description": "Senso numerico \u2014 intuizione sulla plausibilit\u00e0",
+      "insight": "Il test chiave della nostra ipotesi. Il modello progressivo dovrebbe eccellere qui.",
+      "summary": {
+        "total": 20,
+        "correct": 12,
+        "accuracy": 60.0,
+        "avg_generation_time": 0.0434798817965202
+      },
+      "n_tests": 20
+    },
+    "self_awareness": {
+      "description": "Metacognizione \u2014 riconoscere i propri limiti",
+      "insight": "Un modello che sa dire \"non lo so, chiedi al tool\" \u00e8 pi\u00f9 utile di uno che spara numeri sbagliati con confidenza.",
+      "summary": {
+        "total": 20,
+        "correct": 11,
+        "accuracy": 55.00000000000001,
+        "avg_generation_time": 1.5506742854253388,
+        "delegation_accuracy": 100.0,
+        "delegation_rate": 100.0
+      },
+      "n_tests": 20
+    },
+    "adversarial": {
+      "description": "Robustezza \u2014 resiste a trappole e input ambigui",
+      "insight": "Un modello con \"senso\" dovrebbe fiutare le trappole. Uno che ha memorizzato pattern potrebbe cadere.",
+      "summary": {
+        "total": 20,
+        "correct": 12,
+        "accuracy": 60.0,
+        "avg_generation_time": 1.1642063082428649,
+        "error_distribution": {
+          "close_estimate": 3,
+          "correct": 12,
+          "same_magnitude_wrong": 4,
+          "rough_estimate": 1
+        },
+        "severity_distribution": {
+          "minor": 3,
+          "none": 12,
+          "moderate": 5
+        },
+        "sensible_error_rate": 100.0,
+        "catastrophic_error_rate": 0.0
+      },
+      "n_tests": 20
+    },
+    "error_patterns": {
+      "description": "Analisi degli errori \u2014 come e dove il modello fallisce",
+      "insight": "Due modelli possono avere la stessa accuracy ma errori qualitativamente diversi. Errori \"sensati\" vs \"assurdi\".",
+      "summary": {
+        "total": 20,
+        "correct": 10,
+        "accuracy": 50.0,
+        "avg_generation_time": 1.2976866629440338,
+        "error_distribution": {
+          "correct": 10,
+          "same_magnitude_wrong": 3,
+          "magnitude_catastrophic": 3,
+          "close_estimate": 2,
+          "rough_estimate": 2
+        },
+        "severity_distribution": {
+          "none": 10,
+          "moderate": 5,
+          "severe": 3,
+          "minor": 2
+        },
+        "sensible_error_rate": 70.0,
+        "catastrophic_error_rate": 30.0
+      },
+      "n_tests": 20
+    }
+  },
+  "Qwen2.5-1.5B (Base)": {
+    "exact_accuracy": {
+      "description": "Capacit\u00e0 di calcolo esatto \u2014 il benchmark classico",
+      "insight": "Ci aspettiamo che Baseline > Progressivo qui. Ma la domanda \u00e8: di quanto? E ne vale la pena?",
+      "summary": {
+        "total": 18,
+        "correct": 4,
+        "accuracy": 22.22222222222222,
+        "avg_generation_time": 1.4561568200588226,
+        "error_distribution": {
+          "rough_estimate": 5,
+          "magnitude_off_by_one": 4,
+          "correct": 4,
+          "close_estimate": 5
+        },
+        "severity_distribution": {
+          "moderate": 9,
+          "none": 4,
+          "minor": 5
+        },
+        "sensible_error_rate": 71.42857142857143,
+        "catastrophic_error_rate": 0.0
+      },
+      "n_tests": 18
+    },
+    "number_sense": {
+      "description": "Senso numerico \u2014 intuizione sulla plausibilit\u00e0",
+      "insight": "Il test chiave della nostra ipotesi. Il modello progressivo dovrebbe eccellere qui.",
+      "summary": {
+        "total": 20,
+        "correct": 12,
+        "accuracy": 60.0,
+        "avg_generation_time": 0.43669699140591545
+      },
+      "n_tests": 20
+    },
+    "self_awareness": {
+      "description": "Metacognizione \u2014 riconoscere i propri limiti",
+      "insight": "Un modello che sa dire \"non lo so, chiedi al tool\" \u00e8 pi\u00f9 utile di uno che spara numeri sbagliati con confidenza.",
+      "summary": {
+        "total": 20,
+        "correct": 13,
+        "accuracy": 65.0,
+        "avg_generation_time": 1.7760848336154595,
+        "delegation_accuracy": 90.9090909090909,
+        "delegation_rate": 80.0
+      },
+      "n_tests": 20
+    },
+    "adversarial": {
+      "description": "Robustezza \u2014 resiste a trappole e input ambigui",
+      "insight": "Un modello con \"senso\" dovrebbe fiutare le trappole. Uno che ha memorizzato pattern potrebbe cadere.",
+      "summary": {
+        "total": 20,
+        "correct": 5,
+        "accuracy": 25.0,
+        "avg_generation_time": 1.7656163568841294,
+        "error_distribution": {
+          "close_estimate": 1,
+          "correct": 5,
+          "wrong": 6,
+          "magnitude_off_by_one": 5,
+          "sign_error": 1,
+          "rough_estimate": 1,
+          "same_magnitude_wrong": 1
+        },
+        "severity_distribution": {
+          "minor": 1,
+          "none": 5,
+          "severe": 6,
+          "moderate": 8
+        },
+        "sensible_error_rate": 26.666666666666668,
+        "catastrophic_error_rate": 0.0
+      },
+      "n_tests": 20
+    },
+    "error_patterns": {
+      "description": "Analisi degli errori \u2014 come e dove il modello fallisce",
+      "insight": "Due modelli possono avere la stessa accuracy ma errori qualitativamente diversi. Errori \"sensati\" vs \"assurdi\".",
+      "summary": {
+        "total": 20,
+        "correct": 9,
+        "accuracy": 45.0,
+        "avg_generation_time": 1.3448795400909148,
+        "error_distribution": {
+          "correct": 9,
+          "same_magnitude_wrong": 5,
+          "rough_estimate": 3,
+          "magnitude_off_by_one": 3
+        },
+        "severity_distribution": {
+          "none": 9,
+          "moderate": 11
+        },
+        "sensible_error_rate": 72.72727272727273,
+        "catastrophic_error_rate": 0.0
+      },
+      "n_tests": 20
+    }
+  }
+}
