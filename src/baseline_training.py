@@ -185,6 +185,28 @@ def train_baseline():
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
     print("Baseline Training completed!")
+    
+    # Push to Hugging Face Hub
+    hf_token = os.environ.get("HF_TOKEN")
+    repo_id = os.environ.get("HF_REPO_ID", "dexmac/progressive-cognitive-baseline-lora")
+    
+    if hf_token:
+        print(f"\nPushing model to Hugging Face Hub: {repo_id}")
+        try:
+            from huggingface_hub import HfApi
+            api = HfApi(token=hf_token)
+            api.create_repo(repo_id=repo_id, exist_ok=True)
+            model.push_to_hub(repo_id, token=hf_token)
+            tokenizer.push_to_hub(repo_id, token=hf_token)
+            print("Successfully pushed to Hub!")
+            
+            # Pause the space to save money
+            space_id = os.environ.get("SPACE_ID")
+            if space_id:
+                print(f"Pausing space {space_id} to save resources...")
+                api.pause_space(repo_id=space_id)
+        except Exception as e:
+            print(f"Error pushing to hub: {e}")
 
 if __name__ == "__main__":
     train_baseline()
