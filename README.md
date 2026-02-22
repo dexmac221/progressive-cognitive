@@ -295,7 +295,7 @@ A programmer with 25 years of experience doesn't remember syntax — they use an
 
 ## License
 
-MIT — Use, modify, publish as you wish. If you cite the project, it's appreciated but not mandatory.
+Apache License 2.0 — Use, modify, publish as you wish. If you cite the project, it's appreciated but not mandatory.
 
 ---
 
