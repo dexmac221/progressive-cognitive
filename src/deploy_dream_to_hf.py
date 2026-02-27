@@ -3,7 +3,7 @@ from huggingface_hub import HfApi
 
 # Configuration
 TOKEN = os.environ.get("HF_TOKEN", "your_hf_token_here")
-SPACE_NAME = "progressive-cognitive-baseline"
+SPACE_NAME = "progressive-cognitive-dream"
 USERNAME = "dexmac"
 REPO_ID = f"{USERNAME}/{SPACE_NAME}"
 
@@ -35,44 +35,44 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install huggingface_hub
 
-COPY baseline_training.py .
+COPY progressive_llm_cognitive_hf.py .
 
 # Run a dummy HTTP server in the background to pass Hugging Face health check (port 7860)
 # and run the training script in the foreground
-CMD python -m http.server 7860 & python baseline_training.py
+CMD python -m http.server 7860 & python progressive_llm_cognitive_hf.py
 """
 
-with open("Dockerfile_baseline", "w") as f:
+with open("Dockerfile_dream", "w") as f:
     f.write(dockerfile_content)
 
 # Create README.md for the Space
 readme_content = f"""---
-title: Progressive Cognitive Baseline Training
-emoji: 📊
-colorFrom: red
-colorTo: yellow
+title: Progressive Cognitive Dream Pruning
+emoji: 🧠
+colorFrom: purple
+colorTo: pink
 sdk: docker
 pinned: false
 ---
 
-# Progressive Cognitive Architecture - Baseline Training
+# Progressive Cognitive Architecture - Dream Pruning
 
-This Space runs the training of the baseline control model (Flat-LoRA) for A/B testing.
+This Space runs the training of the Progressive-LoRA model using Dream Pruning (SVD Low-Rank Factorization).
 """
 
-with open("SPACE_README_BASELINE.md", "w") as f:
+with open("SPACE_README_DREAM.md", "w") as f:
     f.write(readme_content)
 
 print("Uploading files to Space...")
 try:
     api.upload_file(
-        path_or_fileobj="SPACE_README_BASELINE.md",
+        path_or_fileobj="SPACE_README_DREAM.md",
         path_in_repo="README.md",
         repo_id=REPO_ID,
         repo_type="space"
     )
     api.upload_file(
-        path_or_fileobj="Dockerfile_baseline",
+        path_or_fileobj="Dockerfile_dream",
         path_in_repo="Dockerfile",
         repo_id=REPO_ID,
         repo_type="space"
@@ -84,8 +84,8 @@ try:
         repo_type="space"
     )
     api.upload_file(
-        path_or_fileobj="src/baseline_training.py",
-        path_in_repo="baseline_training.py",
+        path_or_fileobj="src/progressive_llm_cognitive_hf.py",
+        path_in_repo="progressive_llm_cognitive_hf.py",
         repo_id=REPO_ID,
         repo_type="space"
     )
@@ -103,14 +103,13 @@ except Exception as e:
     print(f"Error requesting hardware: {e}")
     print("Make sure you have a valid payment method on Hugging Face.")
 
-# Add secrets to allow the script to upload the model and pause the space
+# Add secrets to allow the script to upload the results and pause the space
 try:
     api.add_space_secret(repo_id=REPO_ID, key="HF_TOKEN", value=TOKEN)
-    # SPACE_ID is a reserved environment variable automatically set by Hugging Face
-    api.add_space_secret(repo_id=REPO_ID, key="HF_REPO_ID", value=f"{USERNAME}/progressive-cognitive-baseline-lora")
+    api.add_space_secret(repo_id=REPO_ID, key="HF_REPO_ID", value=f"{USERNAME}/progressive-cognitive-dream-lora")
+    # SPACE_ID is a reserved environment variable in Hugging Face Spaces, so we don't need to set it manually
     print("Secrets added successfully.")
 except Exception as e:
     print(f"Error adding secrets: {e}")
 
-print("\nDone! The model will be trained and saved in the repository:")
-print(f"https://huggingface.co/{USERNAME}/progressive-cognitive-baseline-lora")
+print("\\nDone! The training will run and results will be saved.")

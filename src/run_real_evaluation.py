@@ -50,7 +50,8 @@ def main():
         try:
             from huggingface_hub import snapshot_download
             print("Downloading Progressive LoRA from HF Hub...")
-            lora_path_prog = snapshot_download(repo_id="dexmac/progressive-cognitive-lora")
+            repo_path = snapshot_download(repo_id="dexmac/progressive-cognitive-lora")
+            lora_path_prog = os.path.join(repo_path, "lora_adapters")
         except Exception as e:
             print(f"Could not download Progressive LoRA: {e}")
             
@@ -90,7 +91,34 @@ def main():
         model_flat = base_model_flat
     model_flat.eval()
     
-    # 3. Load Base Model
+    # 3. Load Dream Pruning Model
+    base_model_dream = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        device_map=device,
+        trust_remote_code=True
+    )
+    
+    lora_path_dream = "./dream_lora_adapters"
+    if not os.path.exists(lora_path_dream):
+        try:
+            from huggingface_hub import snapshot_download
+            print("Downloading Dream-LoRA from HF Hub...")
+            repo_path = snapshot_download(repo_id="dexmac/progressive-cognitive-dream-lora")
+            lora_path_dream = os.path.join(repo_path, "lora_adapters")
+        except Exception as e:
+            print(f"Could not download Dream-LoRA: {e}")
+            
+    if os.path.exists(lora_path_dream):
+        print(f"Loading Dream-LoRA weights from {lora_path_dream}...")
+        model_dream = PeftModel.from_pretrained(base_model_dream, lora_path_dream)
+        model_dream = model_dream.merge_and_unload()
+    else:
+        print("WARNING: Dream-LoRA weights not found.")
+        model_dream = base_model_dream
+    model_dream.eval()
+    
+    # 4. Load Base Model
     print("Loading Base model for comparison...")
     model_base = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -113,6 +141,9 @@ def main():
     print("\nEvaluating Progressive Model...")
     evaluator_prog = RealModelEvaluator('Qwen2.5-1.5B + Progressive LoRA', config, model_prog, tokenizer)
     
+    print("\nEvaluating Dream Model...")
+    evaluator_dream = RealModelEvaluator('Qwen2.5-1.5B + Dream LoRA', config, model_dream, tokenizer)
+    
     print("\nEvaluating Flat-LoRA Model...")
     evaluator_flat = RealModelEvaluator('Qwen2.5-1.5B + Flat LoRA', config, model_flat, tokenizer)
     
@@ -121,6 +152,7 @@ def main():
     
     evaluations = {
         'Qwen2.5-1.5B + Progressive LoRA': evaluator_prog.evaluate_suite(suite),
+        'Qwen2.5-1.5B + Dream LoRA': evaluator_dream.evaluate_suite(suite),
         'Qwen2.5-1.5B + Flat LoRA': evaluator_flat.evaluate_suite(suite),
         'Qwen2.5-1.5B (Base)': evaluator_base.evaluate_suite(suite)
     }

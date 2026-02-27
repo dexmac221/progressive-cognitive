@@ -1,0 +1,14 @@
+
+FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-runtime
+
+WORKDIR /app
+
+ENV OMP_NUM_THREADS=1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install huggingface_hub
+
+COPY baseline_training_llama3.py .
+
+CMD python -m http.server 7860 & python baseline_training_llama3.py

@@ -99,9 +99,9 @@ class TestSuiteGenerator:
         # "Sa calcolare?" — il benchmark tradizionale
         # ═══════════════════════════════════════════════════════
         suite['exact_accuracy'] = {
-            'description': 'Capacità di calcolo esatto — il benchmark classico',
-            'insight': 'Ci aspettiamo che Baseline > Progressivo qui. '
-                       'Ma la domanda è: di quanto? E ne vale la pena?',
+            'description': 'Exact calculation ability — the classic benchmark',
+            'insight': 'We expect Baseline > Progressive here. '
+                       'But the question is: by how much? And is it worth it?',
             'tests': TestSuiteGenerator._gen_exact_accuracy(n),
         }
         
@@ -110,9 +110,9 @@ class TestSuiteGenerator:
         # "Sa se un risultato è plausibile?"
         # ═══════════════════════════════════════════════════════
         suite['number_sense'] = {
-            'description': 'Senso numerico — intuizione sulla plausibilità',
-            'insight': 'Il test chiave della nostra ipotesi. '
-                       'Il modello progressivo dovrebbe eccellere qui.',
+            'description': 'Number sense — intuition about plausibility',
+            'insight': 'The key test of our hypothesis. '
+                       'The progressive model should excel here.',
             'tests': TestSuiteGenerator._gen_number_sense(n),
         }
         
@@ -121,9 +121,9 @@ class TestSuiteGenerator:
         # "Sa quando NON sa?"
         # ═══════════════════════════════════════════════════════
         suite['self_awareness'] = {
-            'description': 'Metacognizione — riconoscere i propri limiti',
-            'insight': 'Un modello che sa dire "non lo so, chiedi al tool" '
-                       'è più utile di uno che spara numeri sbagliati con confidenza.',
+            'description': 'Metacognition — recognizing own limits',
+            'insight': 'A model that can say "I don\'t know, ask the tool" '
+                       'is more useful than one that fires wrong numbers with confidence.',
             'tests': TestSuiteGenerator._gen_self_awareness(n),
         }
         
@@ -132,9 +132,9 @@ class TestSuiteGenerator:
         # "Resiste a input ingannevoli?"
         # ═══════════════════════════════════════════════════════
         suite['adversarial'] = {
-            'description': 'Robustezza — resiste a trappole e input ambigui',
-            'insight': 'Un modello con "senso" dovrebbe fiutare le trappole. '
-                       'Uno che ha memorizzato pattern potrebbe cadere.',
+            'description': 'Robustness — resists traps and ambiguous inputs',
+            'insight': 'A model with "sense" should smell the traps. '
+                       'One that memorized patterns might fall for them.',
             'tests': TestSuiteGenerator._gen_adversarial(n),
         }
         
@@ -143,9 +143,9 @@ class TestSuiteGenerator:
         # "COME sbaglia?" — la domanda più rivelatrice
         # ═══════════════════════════════════════════════════════
         suite['error_patterns'] = {
-            'description': 'Analisi degli errori — come e dove il modello fallisce',
-            'insight': 'Due modelli possono avere la stessa accuracy ma '
-                       'errori qualitativamente diversi. Errori "sensati" vs "assurdi".',
+            'description': 'Error analysis — how and where the model fails',
+            'insight': 'Two models can have the same accuracy but '
+                       'qualitatively different errors. "Sensible" vs "absurd" errors.',
             'tests': TestSuiteGenerator._gen_error_analysis(n),
         }
         
@@ -287,7 +287,7 @@ class TestSuiteGenerator:
                     a = random.randint(100, 9999)
                     b = random.randint(10, 999)
                     expr = f"{a} * {b}"
-                    reason = "moltiplicazione con numeri grandi"
+                    reason = "large number multiplication"
                     
                 elif scenario == 'multi_step':
                     a = random.randint(100, 999)
@@ -296,13 +296,13 @@ class TestSuiteGenerator:
                     d = random.randint(2, 20)
                     op1, op2, op3 = random.choice(['+', '-']), '*', random.choice(['+', '-'])
                     expr = f"{a} {op1} {b} {op2} {c} {op3} {d}"
-                    reason = "espressione multi-step"
+                    reason = "multi-step expression"
                     
                 else:
                     a = random.randint(10000, 99999)
                     b = random.randint(1000, 9999)
                     expr = f"{a} + {b}"
-                    reason = "numeri molto grandi"
+                    reason = "very large numbers"
                 
             else:
                 # Espressioni semplici — il modello può stimare
@@ -310,7 +310,7 @@ class TestSuiteGenerator:
                 b = random.randint(1, 50)
                 op = random.choice(['+', '-', '*'])
                 expr = f"{a} {op} {b}"
-                reason = "operazione elementare"
+                reason = "elementary operation"
                 scenario = 'simple'
             
             result = eval(expr)
@@ -341,38 +341,38 @@ class TestSuiteGenerator:
                 'expression': f"{random.randint(100, 9999)} * 0",
                 'exact_result': 0,
                 'trap_type': 'multiply_by_zero',
-                'description': 'Sembra complesso, risultato banale',
-                'expected_insight': 'qualsiasi × 0 = 0',
+                'description': 'Looks complex, trivial result',
+                'expected_insight': 'anything × 0 = 0',
             },
             lambda: {
                 'expression': f"{random.randint(100, 9999)} * 1",
                 'exact_result': eval(f"{random.randint(100, 9999)} * 1"),
                 'trap_type': 'multiply_by_one',
-                'description': 'Moltiplicazione per 1 — identità',
-                'expected_insight': 'qualsiasi × 1 = identità',
+                'description': 'Multiply by 1 — identity',
+                'expected_insight': 'anything × 1 = identity',
             },
             # Trappola 2: Addizione per 0
             lambda: {
                 'expression': f"{random.randint(100, 9999)} + 0",
                 'exact_result': eval(f"{random.randint(100, 9999)} + 0"),
                 'trap_type': 'add_zero',
-                'description': 'Addizione con 0 — identità',
-                'expected_insight': 'qualsiasi + 0 = identità',
+                'description': 'Addition with 0 — identity',
+                'expected_insight': 'anything + 0 = identity',
             },
             # Trappola 3: Sottrazione da sé stesso
             lambda: (lambda x: {
                 'expression': f"{x} - {x}",
                 'exact_result': 0,
                 'trap_type': 'self_subtract',
-                'description': 'Un numero meno sé stesso',
-                'expected_insight': 'x - x = 0 sempre',
+                'description': 'A number minus itself',
+                'expected_insight': 'x - x = 0 always',
             })(random.randint(100, 99999)),
             # Trappola 4: Commutatività — stessa operazione in ordine diverso
             lambda: (lambda a, b: {
                 'expression': f"{b} + {a}",
                 'exact_result': a + b,
                 'trap_type': 'commutativity',
-                'description': f'Dovrebbe dare lo stesso di {a} + {b}',
+                'description': f'Should give the same as {a} + {b}',
                 'expected_insight': 'a + b = b + a',
                 'twin_expression': f"{a} + {b}",
             })(random.randint(100, 999), random.randint(100, 999)),
@@ -381,25 +381,25 @@ class TestSuiteGenerator:
                 'expression': f"999 + 2",
                 'exact_result': 1001,
                 'trap_type': 'carry_trap',
-                'description': 'Riporto — il modello potrebbe dire 1000',
-                'expected_insight': '999 + 2 = 1001, non 1000',
+                'description': 'Carry — the model might say 1000',
+                'expected_insight': '999 + 2 = 1001, not 1000',
             },
             # Trappola 6: Ordine delle operazioni
             lambda: (lambda a, b, c: {
                 'expression': f"{a} + {b} * {c}",
                 'exact_result': a + b * c,
                 'trap_type': 'order_of_operations',
-                'description': 'Precedenza: × prima di +',
+                'description': 'Precedence: × before +',
                 'wrong_answer': (a + b) * c,
-                'expected_insight': f'Deve fare {b}×{c} prima, poi + {a}',
+                'expected_insight': f'Must do {b}×{c} first, then + {a}',
             })(random.randint(10, 100), random.randint(2, 20), random.randint(2, 20)),
             # Trappola 7: Numeri negativi risultanti
             lambda: (lambda a, b: {
                 'expression': f"{a} - {b}",
                 'exact_result': a - b,
                 'trap_type': 'negative_result',
-                'description': 'Risultato negativo — spesso sbagliato dai modelli',
-                'expected_insight': 'Deve gestire segno negativo',
+                'description': 'Negative result — often wrong for models',
+                'expected_insight': 'Must handle negative sign',
             })(random.randint(10, 100), random.randint(200, 500)),
         ]
         
@@ -493,14 +493,14 @@ class ResponseAnalyzer:
             return {
                 'type': 'no_answer',
                 'severity': 'unknown',
-                'description': 'Nessun numero estratto dalla risposta',
+                'description': 'No number extracted from response',
             }
         
         if predicted == exact:
             return {
                 'type': 'correct',
                 'severity': 'none',
-                'description': 'Risposta esatta',
+                'description': 'Exact answer',
             }
         
         error = abs(predicted - exact)
@@ -511,7 +511,7 @@ class ResponseAnalyzer:
             return {
                 'type': 'sign_error',
                 'severity': 'moderate',
-                'description': 'Segno sbagliato — ha capito la magnitudine',
+                'description': 'Wrong sign — understood the magnitude',
                 'relative_error': relative,
             }
         
@@ -524,7 +524,7 @@ class ResponseAnalyzer:
                 return {
                     'type': 'magnitude_catastrophic',
                     'severity': 'severe',
-                    'description': f'Ordine di grandezza sbagliato di {abs(mag_exact - mag_pred)} '
+                    'description': f'Wrong order of magnitude by {abs(mag_exact - mag_pred)} '
                                    f'(pred: 10^{mag_pred}, exact: 10^{mag_exact})',
                     'relative_error': relative,
                 }
@@ -532,7 +532,7 @@ class ResponseAnalyzer:
                 return {
                     'type': 'magnitude_off_by_one',
                     'severity': 'moderate',
-                    'description': 'Sbagliato di un ordine di grandezza',
+                    'description': 'Off by one order of magnitude',
                     'relative_error': relative,
                 }
         
@@ -541,7 +541,7 @@ class ResponseAnalyzer:
             return {
                 'type': 'close_estimate',
                 'severity': 'minor',
-                'description': f'Errore piccolo ({relative*100:.1f}%) — buona intuizione',
+                'description': f'Small error ({relative*100:.1f}%) — good intuition',
                 'relative_error': relative,
             }
         
@@ -550,7 +550,7 @@ class ResponseAnalyzer:
             return {
                 'type': 'rough_estimate',
                 'severity': 'moderate',
-                'description': f'Errore medio ({relative*100:.1f}%) — stima rozza ma non assurda',
+                'description': f'Medium error ({relative*100:.1f}%) — rough but not absurd estimate',
                 'relative_error': relative,
             }
         
@@ -562,14 +562,14 @@ class ResponseAnalyzer:
                 return {
                     'type': 'same_magnitude_wrong',
                     'severity': 'moderate',
-                    'description': f'Ordine di grandezza giusto, valore sbagliato ({relative*100:.0f}%)',
+                    'description': f'Right order of magnitude, wrong value ({relative*100:.0f}%)',
                     'relative_error': relative,
                 }
         
         return {
             'type': 'wrong',
             'severity': 'severe',
-            'description': f'Errore grande ({relative*100:.0f}%)',
+            'description': f'Large error ({relative*100:.0f}%)',
             'relative_error': relative,
         }
     
@@ -579,14 +579,14 @@ class ResponseAnalyzer:
         text_lower = text.lower()
         
         delegation_signals = [
-            'tool', 'calcolatrice', 'calcola', 'delega',
-            'complesso', 'difficile', 'non so', 'incerto',
-            '<tool>', 'TOOL', 'delegare',
+            'tool', 'calculator', 'delegate', 'delegation',
+            'complex', 'difficult', "don't know", 'uncertain',
+            '<tool>', 'TOOL', 'cannot',
         ]
         
         confidence_signals = [
-            'circa', 'approssim', 'stima', 'ordine',
-            'forse', 'probabilmente', '~',
+            'about', 'approximat', 'estimat', 'order',
+            'maybe', 'probably', '~', 'roughly',
         ]
         
         has_delegation = any(s in text_lower for s in delegation_signals)
@@ -659,18 +659,18 @@ class ModelEvaluator:
             
             # Genera prompt appropriato per la categoria
             if category == 'exact_accuracy':
-                prompt = f"Calcola: {expr} ="
+                prompt = f"Calculate: {expr} ="
             elif category == 'number_sense':
-                prompt = (f"Qualcuno dice che {expr} = {test['proposed_answer']}. "
-                          f"È plausibile? Rispondi SI o NO.")
+                prompt = (f"Someone claims that {expr} = {test['proposed_answer']}. "
+                          f"Is this plausible? Answer YES or NO.")
             elif category == 'self_awareness':
-                prompt = (f"Devi risolvere: {expr}. "
-                          f"Puoi calcolare internamente o delegare al tool. "
-                          f"Cosa fai?")
+                prompt = (f"You need to solve: {expr}. "
+                          f"You can compute internally or delegate to a tool. "
+                          f"What do you do?")
             elif category == 'adversarial':
-                prompt = f"Calcola: {expr} ="
+                prompt = f"Calculate: {expr} ="
             elif category == 'error_patterns':
-                prompt = f"Calcola: {expr} ="
+                prompt = f"Calculate: {expr} ="
             else:
                 prompt = f"{expr} ="
             
@@ -698,8 +698,8 @@ class ModelEvaluator:
             elif category == 'number_sense':
                 # Il modello deve dire se la proposta è plausibile
                 response_lower = response.lower()
-                said_yes = 'si' in response_lower or 'sì' in response_lower or 'plausib' in response_lower
-                said_no = 'no' in response_lower or 'assurd' in response_lower or 'impossib' in response_lower
+                said_yes = 'yes' in response_lower or 'plausib' in response_lower or 'correct' in response_lower
+                said_no = 'no' in response_lower or 'absurd' in response_lower or 'impossib' in response_lower or 'wrong' in response_lower
                 
                 model_judgment = 'plausible' if said_yes else ('implausible' if said_no else 'unclear')
                 correct_judgment = 'plausible' if test['is_plausible'] else 'implausible'
@@ -774,12 +774,12 @@ class ModelEvaluator:
         print(f"    Accuracy: {acc_str:>8s} ({correct}/{n})")
         
         if 'sensible_error_rate' in summary:
-            print(f"    Errori sensati: {summary['sensible_error_rate']:.1f}% | "
-                  f"Catastrofici: {summary['catastrophic_error_rate']:.1f}%")
+            print(f"    Sensible errors: {summary['sensible_error_rate']:.1f}% | "
+                  f"Catastrophic: {summary['catastrophic_error_rate']:.1f}%")
         
         if 'delegation_accuracy' in summary:
-            print(f"    Delega corretta: {summary['delegation_accuracy']:.1f}% | "
-                  f"Tasso delega: {summary['delegation_rate']:.1f}%")
+            print(f"    Correct delegation: {summary['delegation_accuracy']:.1f}% | "
+                  f"Delegation rate: {summary['delegation_rate']:.1f}%")
         
         return summary
     
@@ -791,13 +791,13 @@ class ModelEvaluator:
         # Estrai l'espressione
         expr_match = re.search(r'(\d+\s*[+\-*/]\s*\d+(?:\s*[+\-*/]\s*\d+)*)', prompt)
         if not expr_match:
-            return "non riesco a interpretare"
+            return "unable to interpret"
         
         expr = expr_match.group(1)
         try:
             exact = eval(expr)
         except:
-            return "errore nel calcolo"
+            return "calculation error"
         
         if 'baseline' in self.model_name.lower():
             # Baseline: tenta il calcolo esatto, a volte sbaglia
@@ -805,32 +805,32 @@ class ModelEvaluator:
             return str(int(exact + noise))
             
         elif 'progressiv' in self.model_name.lower():
-            if 'plausib' in prompt.lower() or 'Qualcuno' in prompt:
+            if 'plausib' in prompt.lower() or 'Someone' in prompt or 'claims' in prompt:
                 # Test senso numerico — il progressivo è forte qui
                 proposed = re.search(r'= (-?\d+)', prompt)
                 if proposed:
                     proposed_val = int(proposed.group(1))
                     relative_err = abs(proposed_val - exact) / max(abs(exact), 1)
                     if relative_err < 0.3:
-                        return "SI, è plausibile, nell'ordine giusto"
+                        return "YES, it's plausible, right order of magnitude"
                     else:
-                        return "NO, il numero è assurdo per quest'operazione"
+                        return "NO, the number is absurd for this operation"
                 return "SI"
             
-            elif 'delegare' in prompt.lower() or 'tool' in prompt.lower():
+            elif 'delegate' in prompt.lower() or 'tool' in prompt.lower():
                 # Test delega — il progressivo sa quando delegare
                 complexity = len(re.findall(r'[+\-*/]', expr))
                 max_operand = max(int(x) for x in re.findall(r'\d+', expr))
                 
                 if complexity >= 2 or max_operand > 100:
-                    return f"DELEGA AL TOOL: espressione troppo complessa. Stima: circa {round(exact, -2)}"
+                    return f"DELEGATE TO TOOL: expression too complex. Estimate: about {round(exact, -2)}"
                 else:
-                    return f"Calcolo interno: circa {round(exact, -1)}"
+                    return f"Internal compute: about {round(exact, -1)}"
             
             else:
                 # Calcolo: approssima bene ma non è esatto
                 noise = random.gauss(0, abs(exact) * 0.08) if random.random() > 0.5 else 0
-                return f"circa {int(exact + noise)}"
+                return f"about {int(exact + noise)}"
             
         else:  # tool-only
             return f"<TOOL>{expr}</TOOL> = {exact}"
@@ -854,8 +854,8 @@ class ComparativeReport:
     def generate(self):
         """Genera il report completo."""
         print("\n" + "═" * 70)
-        print("  REPORT COMPARATIVO — Architettura Cognitiva Progressiva")
-        print("  Non una classifica. Una comprensione.")
+        print("  COMPARATIVE REPORT — Progressive Cognitive Architecture")
+        print("  Not a ranking. An understanding.")
         print("═" * 70)
         
         models = list(self.evals.keys())
@@ -881,14 +881,14 @@ class ComparativeReport:
             
             # Riga extra per metriche specifiche
             if 'sensible_error_rate' in self.evals[models[0]][cat]['summary']:
-                print(f"  {'  ↳ errori sensati':<25s}", end="")
+                print(f"  {'  ↳ sensible errors':<25s}", end="")
                 for model in models:
                     rate = self.evals[model][cat]['summary'].get('sensible_error_rate', 0)
                     print(f" │ {rate:>17.1f}%", end="")
                 print()
             
             if 'delegation_accuracy' in self.evals[models[0]][cat]['summary']:
-                print(f"  {'  ↳ delega corretta':<25s}", end="")
+                print(f"  {'  ↳ correct delegation':<25s}", end="")
                 for model in models:
                     rate = self.evals[model][cat]['summary'].get('delegation_accuracy', 0)
                     print(f" │ {rate:>17.1f}%", end="")
@@ -896,7 +896,7 @@ class ComparativeReport:
         
         # ─── Analisi qualitativa ───
         print(f"\n\n  {'═' * 66}")
-        print("  ANALISI QUALITATIVA")
+        print("  QUALITATIVE ANALYSIS")
         print(f"  {'═' * 66}")
         
         for cat in test_categories:
@@ -905,7 +905,7 @@ class ComparativeReport:
             
             # Confronta i pattern di errore tra modelli
             if 'error_distribution' in self.evals[models[0]][cat]['summary']:
-                print(f"\n    Pattern di errore:")
+                print(f"\n    Error patterns:")
                 for model in models:
                     dist = self.evals[model][cat]['summary'].get('error_distribution', {})
                     top_errors = sorted(dist.items(), key=lambda x: -x[1])[:3]
@@ -914,7 +914,7 @@ class ComparativeReport:
         
         # ─── Verdetto ───
         print(f"\n\n  {'═' * 66}")
-        print("  OSSERVAZIONI CHIAVE")
+        print("  KEY OBSERVATIONS")
         print(f"  {'═' * 66}")
         
         self._generate_insights(models, test_categories)
@@ -929,8 +929,8 @@ class ComparativeReport:
             accs = {m: self.evals[m]['exact_accuracy']['summary']['accuracy'] for m in models}
             best = max(accs, key=accs.get)
             insights.append(
-                f"  1. CALCOLO ESATTO: {best} è il migliore ({accs[best]:.1f}%), "
-                f"ma è il test che conta di meno nell'uso reale."
+                f"  1. EXACT CALCULATION: {best} is best ({accs[best]:.1f}%), "
+                f"but this is the test that matters least in real use."
             )
         
         # Confronto senso numerico
@@ -938,8 +938,8 @@ class ComparativeReport:
             accs = {m: self.evals[m]['number_sense']['summary']['accuracy'] for m in models}
             best = max(accs, key=accs.get)
             insights.append(
-                f"  2. SENSO NUMERICO: {best} ({accs[best]:.1f}%) — "
-                f"questo è il test dell'intuizione, il più rivelatrice."
+                f"  2. NUMBER SENSE: {best} ({accs[best]:.1f}%) — "
+                f"this is the intuition test, the most revealing."
             )
         
         # Confronto errori sensati
@@ -948,8 +948,8 @@ class ComparativeReport:
                 rate = self.evals[m]['error_patterns']['summary'].get('sensible_error_rate', 0)
                 cat_rate = self.evals[m]['error_patterns']['summary'].get('catastrophic_error_rate', 0)
                 insights.append(
-                    f"  3. QUALITÀ ERRORI ({m}): "
-                    f"{rate:.0f}% errori sensati, {cat_rate:.0f}% catastrofici"
+                    f"  3. ERROR QUALITY ({m}): "
+                    f"{rate:.0f}% sensible errors, {cat_rate:.0f}% catastrophic"
                 )
         
         # Confronto delega
@@ -957,8 +957,8 @@ class ComparativeReport:
             for m in models:
                 deleg = self.evals[m]['self_awareness']['summary'].get('delegation_accuracy', 0)
                 insights.append(
-                    f"  4. METACOGNIZIONE ({m}): "
-                    f"delega corretta {deleg:.0f}%"
+                    f"  4. METACOGNITION ({m}): "
+                    f"correct delegation {deleg:.0f}%"
                 )
         
         for insight in insights:
@@ -966,15 +966,15 @@ class ComparativeReport:
         
         print(f"""
   ╔════════════════════════════════════════════════════════════════╗
-  ║  La domanda non è "chi vince?"                                ║
-  ║  La domanda è "quale tipo di intelligenza serve?"             ║
+  ║  The question is not "who wins?"                                ║
+  ║  The question is "what kind of intelligence do we need?"        ║
   ║                                                                ║
-  ║  Un modello che sbaglia del 5% ma sa quando delegare          ║
-  ║  è più utile di uno che indovina il 70% ma spara numeri       ║
-  ║  sbagliati il restante 30% con totale confidenza.             ║
+  ║  A model that's off by 5% but knows when to delegate           ║
+  ║  is more useful than one that guesses 70% right but fires      ║
+  ║  wrong numbers the other 30% with total confidence.            ║
   ║                                                                ║
-  ║  L'intuizione compressa + tool deterministici >               ║
-  ║  calcolo brute-force nei pesi del modello.                    ║
+  ║  Compressed intuition + deterministic tools >                  ║
+  ║  brute-force calculation in model weights.                     ║
   ╚════════════════════════════════════════════════════════════════╝
         """)
     

@@ -1,0 +1,1149 @@
+{
+  "metadata": {
+    "n_samples_per_test": 100,
+    "seeds": [
+      42,
+      123,
+      7
+    ],
+    "n_runs": 3,
+    "total_evaluations": 6000,
+    "elapsed_minutes": 119.2,
+    "base_model": "Qwen/Qwen2.5-1.5B"
+  },
+  "statistical_summary": {
+    "Qwen2.5-1.5B (Base)": {
+      "exact_accuracy": {
+        "accuracy": {
+          "mean": 18.18181818181818,
+          "std": 2.856997095703222,
+          "min": 14.14141414141414,
+          "max": 20.2020202020202,
+          "n_runs": 3,
+          "values": [
+            20.2020202020202,
+            14.14141414141414,
+            20.2020202020202
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 69.64010920824025,
+          "std": 3.706298232998866,
+          "min": 65.88235294117646,
+          "max": 74.68354430379746,
+          "n_runs": 3,
+          "values": [
+            68.35443037974683,
+            65.88235294117646,
+            74.68354430379746
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 6.602134524695953,
+          "std": 1.6317180356310348,
+          "min": 5.063291139240507,
+          "max": 8.860759493670885,
+          "n_runs": 3,
+          "values": [
+            8.860759493670885,
+            5.88235294117647,
+            5.063291139240507
+          ]
+        }
+      },
+      "number_sense": {
+        "accuracy": {
+          "mean": 57.0,
+          "std": 1.4142135623730916,
+          "min": 56.00000000000001,
+          "max": 59.0,
+          "n_runs": 3,
+          "values": [
+            56.00000000000001,
+            56.00000000000001,
+            59.0
+          ]
+        }
+      },
+      "self_awareness": {
+        "accuracy": {
+          "mean": 58.0,
+          "std": 3.5590260840104335,
+          "min": 55.00000000000001,
+          "max": 63.0,
+          "n_runs": 3,
+          "values": [
+            55.00000000000001,
+            63.0,
+            56.00000000000001
+          ]
+        },
+        "delegation_accuracy": {
+          "mean": 84.85826001955034,
+          "std": 2.2703242533169083,
+          "min": 81.81818181818183,
+          "max": 87.27272727272727,
+          "n_runs": 3,
+          "values": [
+            81.81818181818183,
+            85.48387096774194,
+            87.27272727272727
+          ]
+        },
+        "delegation_rate": {
+          "mean": 84.33333333333333,
+          "std": 2.494438257849294,
+          "min": 81.0,
+          "max": 87.0,
+          "n_runs": 3,
+          "values": [
+            87.0,
+            81.0,
+            85.0
+          ]
+        }
+      },
+      "adversarial": {
+        "accuracy": {
+          "mean": 46.333333333333336,
+          "std": 2.8674417556808756,
+          "min": 43.0,
+          "max": 50.0,
+          "n_runs": 3,
+          "values": [
+            50.0,
+            43.0,
+            46.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 31.71929824561403,
+          "std": 1.4461362822057282,
+          "min": 29.82456140350877,
+          "max": 33.33333333333333,
+          "n_runs": 3,
+          "values": [
+            32.0,
+            29.82456140350877,
+            33.33333333333333
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "error_patterns": {
+        "accuracy": {
+          "mean": 34.333333333333336,
+          "std": 4.714045207910317,
+          "min": 31.0,
+          "max": 41.0,
+          "n_runs": 3,
+          "values": [
+            41.0,
+            31.0,
+            31.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 55.596495537541955,
+          "std": 5.8035280085576035,
+          "min": 50.847457627118644,
+          "max": 63.76811594202898,
+          "n_runs": 3,
+          "values": [
+            50.847457627118644,
+            63.76811594202898,
+            52.17391304347826
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 14.26348972406452,
+          "std": 1.9082423802004265,
+          "min": 11.594202898550725,
+          "max": 15.942028985507244,
+          "n_runs": 3,
+          "values": [
+            15.254237288135593,
+            11.594202898550725,
+            15.942028985507244
+          ]
+        }
+      }
+    },
+    "Qwen2.5-1.5B + Flat LoRA": {
+      "exact_accuracy": {
+        "accuracy": {
+          "mean": 60.6060606060606,
+          "std": 3.779451905832268,
+          "min": 56.56565656565656,
+          "max": 65.65656565656566,
+          "n_runs": 3,
+          "values": [
+            59.59595959595959,
+            56.56565656565656,
+            65.65656565656566
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 88.18285453716369,
+          "std": 2.5250816007009522,
+          "min": 85.0,
+          "max": 91.17647058823529,
+          "n_runs": 3,
+          "values": [
+            85.0,
+            88.37209302325581,
+            91.17647058823529
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "number_sense": {
+        "accuracy": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "self_awareness": {
+        "accuracy": {
+          "mean": 39.0,
+          "std": 4.546060565661952,
+          "min": 34.0,
+          "max": 45.0,
+          "n_runs": 3,
+          "values": [
+            34.0,
+            38.0,
+            45.0
+          ]
+        },
+        "delegation_accuracy": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "delegation_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "adversarial": {
+        "accuracy": {
+          "mean": 90.66666666666667,
+          "std": 1.247219128924647,
+          "min": 89.0,
+          "max": 92.0,
+          "n_runs": 3,
+          "values": [
+            92.0,
+            91.0,
+            89.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 93.26599326599326,
+          "std": 4.8325589543459015,
+          "min": 88.88888888888889,
+          "max": 100.0,
+          "n_runs": 3,
+          "values": [
+            100.0,
+            88.88888888888889,
+            90.9090909090909
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "error_patterns": {
+        "accuracy": {
+          "mean": 78.33333333333333,
+          "std": 5.312459150169742,
+          "min": 72.0,
+          "max": 85.0,
+          "n_runs": 3,
+          "values": [
+            78.0,
+            85.0,
+            72.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 91.33477633477634,
+          "std": 3.99663209935194,
+          "min": 86.66666666666667,
+          "max": 96.42857142857143,
+          "n_runs": 3,
+          "values": [
+            90.9090909090909,
+            86.66666666666667,
+            96.42857142857143
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "Qwen2.5-1.5B + Progressive LoRA": {
+      "exact_accuracy": {
+        "accuracy": {
+          "mean": 37.03703703703704,
+          "std": 0.47616618261720384,
+          "min": 36.36363636363637,
+          "max": 37.37373737373738,
+          "n_runs": 3,
+          "values": [
+            37.37373737373738,
+            37.37373737373738,
+            36.36363636363637
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 56.11025772316094,
+          "std": 5.2610934548695205,
+          "min": 51.61290322580645,
+          "max": 63.49206349206349,
+          "n_runs": 3,
+          "values": [
+            53.2258064516129,
+            51.61290322580645,
+            63.49206349206349
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 40.15190305512886,
+          "std": 5.980210060568148,
+          "min": 31.746031746031743,
+          "max": 45.16129032258064,
+          "n_runs": 3,
+          "values": [
+            43.54838709677419,
+            45.16129032258064,
+            31.746031746031743
+          ]
+        }
+      },
+      "number_sense": {
+        "accuracy": {
+          "mean": 57.66666666666666,
+          "std": 0.4714045207910317,
+          "min": 56.99999999999999,
+          "max": 57.99999999999999,
+          "n_runs": 3,
+          "values": [
+            57.99999999999999,
+            56.99999999999999,
+            57.99999999999999
+          ]
+        }
+      },
+      "self_awareness": {
+        "accuracy": {
+          "mean": 60.666666666666664,
+          "std": 3.681787005729084,
+          "min": 56.00000000000001,
+          "max": 65.0,
+          "n_runs": 3,
+          "values": [
+            65.0,
+            61.0,
+            56.00000000000001
+          ]
+        },
+        "delegation_accuracy": {
+          "mean": 98.45226458129684,
+          "std": 1.237973948616023,
+          "min": 96.96969696969697,
+          "max": 100.0,
+          "n_runs": 3,
+          "values": [
+            96.96969696969697,
+            98.38709677419355,
+            100.0
+          ]
+        },
+        "delegation_rate": {
+          "mean": 98.33333333333333,
+          "std": 0.9428090415820634,
+          "min": 97.0,
+          "max": 99.0,
+          "n_runs": 3,
+          "values": [
+            97.0,
+            99.0,
+            99.0
+          ]
+        }
+      },
+      "adversarial": {
+        "accuracy": {
+          "mean": 55.0,
+          "std": 4.08248290463863,
+          "min": 50.0,
+          "max": 60.0,
+          "n_runs": 3,
+          "values": [
+            55.00000000000001,
+            50.0,
+            60.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 76.92592592592592,
+          "std": 1.364853760939874,
+          "min": 75.0,
+          "max": 78.0,
+          "n_runs": 3,
+          "values": [
+            77.77777777777779,
+            78.0,
+            75.0
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "error_patterns": {
+        "accuracy": {
+          "mean": 37.0,
+          "std": 3.7416573867739413,
+          "min": 33.0,
+          "max": 42.0,
+          "n_runs": 3,
+          "values": [
+            36.0,
+            33.0,
+            42.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 54.23770157831532,
+          "std": 5.914222889561176,
+          "min": 46.55172413793103,
+          "max": 60.9375,
+          "n_runs": 3,
+          "values": [
+            60.9375,
+            55.223880597014926,
+            46.55172413793103
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 41.6044776119403,
+          "std": 5.937019395454041,
+          "min": 37.3134328358209,
+          "max": 50.0,
+          "n_runs": 3,
+          "values": [
+            37.5,
+            37.3134328358209,
+            50.0
+          ]
+        }
+      }
+    },
+    "Qwen2.5-1.5B + Dream LoRA": {
+      "exact_accuracy": {
+        "accuracy": {
+          "mean": 58.58585858585858,
+          "std": 2.8569970957032265,
+          "min": 54.54545454545454,
+          "max": 60.60606060606061,
+          "n_runs": 3,
+          "values": [
+            60.60606060606061,
+            54.54545454545454,
+            60.60606060606061
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 73.04843304843304,
+          "std": 2.743339741814413,
+          "min": 69.23076923076923,
+          "max": 75.55555555555556,
+          "n_runs": 3,
+          "values": [
+            69.23076923076923,
+            75.55555555555556,
+            74.35897435897436
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 21.93732193732194,
+          "std": 3.14682650062315,
+          "min": 17.94871794871795,
+          "max": 25.64102564102564,
+          "n_runs": 3,
+          "values": [
+            25.64102564102564,
+            22.22222222222222,
+            17.94871794871795
+          ]
+        }
+      },
+      "number_sense": {
+        "accuracy": {
+          "mean": 60.0,
+          "std": 0.816496580927726,
+          "min": 59.0,
+          "max": 61.0,
+          "n_runs": 3,
+          "values": [
+            59.0,
+            61.0,
+            60.0
+          ]
+        }
+      },
+      "self_awareness": {
+        "accuracy": {
+          "mean": 61.0,
+          "std": 4.546060565661949,
+          "min": 55.00000000000001,
+          "max": 66.0,
+          "n_runs": 3,
+          "values": [
+            66.0,
+            62.0,
+            55.00000000000001
+          ]
+        },
+        "delegation_accuracy": {
+          "mean": 100.0,
+          "std": 0.0,
+          "min": 100.0,
+          "max": 100.0,
+          "n_runs": 3,
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "delegation_rate": {
+          "mean": 100.0,
+          "std": 0.0,
+          "min": 100.0,
+          "max": 100.0,
+          "n_runs": 3,
+          "values": [
+            100.0,
+            100.0,
+            100.0
+          ]
+        }
+      },
+      "adversarial": {
+        "accuracy": {
+          "mean": 59.333333333333336,
+          "std": 3.299831645537219,
+          "min": 55.00000000000001,
+          "max": 63.0,
+          "n_runs": 3,
+          "values": [
+            60.0,
+            55.00000000000001,
+            63.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 71.2937937937938,
+          "std": 0.9194032081824439,
+          "min": 70.27027027027027,
+          "max": 72.5,
+          "n_runs": 3,
+          "values": [
+            72.5,
+            71.11111111111111,
+            70.27027027027027
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "n_runs": 3,
+          "values": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "error_patterns": {
+        "accuracy": {
+          "mean": 51.0,
+          "std": 2.8284271247461903,
+          "min": 47.0,
+          "max": 53.0,
+          "n_runs": 3,
+          "values": [
+            47.0,
+            53.0,
+            53.0
+          ]
+        },
+        "sensible_error_rate": {
+          "mean": 81.33279807306302,
+          "std": 5.8116732703733955,
+          "min": 74.46808510638297,
+          "max": 88.67924528301887,
+          "n_runs": 3,
+          "values": [
+            88.67924528301887,
+            80.85106382978722,
+            74.46808510638297
+          ]
+        },
+        "catastrophic_error_rate": {
+          "mean": 13.073732102234713,
+          "std": 4.323862811188711,
+          "min": 9.433962264150944,
+          "max": 19.148936170212767,
+          "n_runs": 3,
+          "values": [
+            9.433962264150944,
+            10.638297872340425,
+            19.148936170212767
+          ]
+        }
+      }
+    }
+  },
+  "raw_per_run": [
+    {
+      "seed": 42,
+      "metrics": {
+        "Qwen2.5-1.5B (Base)": {
+          "exact_accuracy": {
+            "accuracy": 20.2020202020202,
+            "sensible_error_rate": 68.35443037974683,
+            "catastrophic_error_rate": 8.860759493670885,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 56.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 55.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 81.81818181818183,
+            "delegation_rate": 87.0
+          },
+          "adversarial": {
+            "accuracy": 50.0,
+            "sensible_error_rate": 32.0,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 41.0,
+            "sensible_error_rate": 50.847457627118644,
+            "catastrophic_error_rate": 15.254237288135593,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Flat LoRA": {
+          "exact_accuracy": {
+            "accuracy": 59.59595959595959,
+            "sensible_error_rate": 85.0,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 0.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 34.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 0.0,
+            "delegation_rate": 0.0
+          },
+          "adversarial": {
+            "accuracy": 92.0,
+            "sensible_error_rate": 100.0,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 78.0,
+            "sensible_error_rate": 90.9090909090909,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Progressive LoRA": {
+          "exact_accuracy": {
+            "accuracy": 37.37373737373738,
+            "sensible_error_rate": 53.2258064516129,
+            "catastrophic_error_rate": 43.54838709677419,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 57.99999999999999,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 65.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 96.96969696969697,
+            "delegation_rate": 97.0
+          },
+          "adversarial": {
+            "accuracy": 55.00000000000001,
+            "sensible_error_rate": 77.77777777777779,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 36.0,
+            "sensible_error_rate": 60.9375,
+            "catastrophic_error_rate": 37.5,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Dream LoRA": {
+          "exact_accuracy": {
+            "accuracy": 60.60606060606061,
+            "sensible_error_rate": 69.23076923076923,
+            "catastrophic_error_rate": 25.64102564102564,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 59.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 66.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 100.0,
+            "delegation_rate": 100.0
+          },
+          "adversarial": {
+            "accuracy": 60.0,
+            "sensible_error_rate": 72.5,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 47.0,
+            "sensible_error_rate": 88.67924528301887,
+            "catastrophic_error_rate": 9.433962264150944,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "metrics": {
+        "Qwen2.5-1.5B (Base)": {
+          "exact_accuracy": {
+            "accuracy": 14.14141414141414,
+            "sensible_error_rate": 65.88235294117646,
+            "catastrophic_error_rate": 5.88235294117647,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 56.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 63.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 85.48387096774194,
+            "delegation_rate": 81.0
+          },
+          "adversarial": {
+            "accuracy": 43.0,
+            "sensible_error_rate": 29.82456140350877,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 31.0,
+            "sensible_error_rate": 63.76811594202898,
+            "catastrophic_error_rate": 11.594202898550725,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Flat LoRA": {
+          "exact_accuracy": {
+            "accuracy": 56.56565656565656,
+            "sensible_error_rate": 88.37209302325581,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 0.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 38.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 0.0,
+            "delegation_rate": 0.0
+          },
+          "adversarial": {
+            "accuracy": 91.0,
+            "sensible_error_rate": 88.88888888888889,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 85.0,
+            "sensible_error_rate": 86.66666666666667,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Progressive LoRA": {
+          "exact_accuracy": {
+            "accuracy": 37.37373737373738,
+            "sensible_error_rate": 51.61290322580645,
+            "catastrophic_error_rate": 45.16129032258064,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 56.99999999999999,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 61.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 98.38709677419355,
+            "delegation_rate": 99.0
+          },
+          "adversarial": {
+            "accuracy": 50.0,
+            "sensible_error_rate": 78.0,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 33.0,
+            "sensible_error_rate": 55.223880597014926,
+            "catastrophic_error_rate": 37.3134328358209,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Dream LoRA": {
+          "exact_accuracy": {
+            "accuracy": 54.54545454545454,
+            "sensible_error_rate": 75.55555555555556,
+            "catastrophic_error_rate": 22.22222222222222,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 61.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 62.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 100.0,
+            "delegation_rate": 100.0
+          },
+          "adversarial": {
+            "accuracy": 55.00000000000001,
+            "sensible_error_rate": 71.11111111111111,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 53.0,
+            "sensible_error_rate": 80.85106382978722,
+            "catastrophic_error_rate": 10.638297872340425,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "metrics": {
+        "Qwen2.5-1.5B (Base)": {
+          "exact_accuracy": {
+            "accuracy": 20.2020202020202,
+            "sensible_error_rate": 74.68354430379746,
+            "catastrophic_error_rate": 5.063291139240507,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 59.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 56.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 87.27272727272727,
+            "delegation_rate": 85.0
+          },
+          "adversarial": {
+            "accuracy": 46.0,
+            "sensible_error_rate": 33.33333333333333,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 31.0,
+            "sensible_error_rate": 52.17391304347826,
+            "catastrophic_error_rate": 15.942028985507244,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Flat LoRA": {
+          "exact_accuracy": {
+            "accuracy": 65.65656565656566,
+            "sensible_error_rate": 91.17647058823529,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 0.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 45.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 0.0,
+            "delegation_rate": 0.0
+          },
+          "adversarial": {
+            "accuracy": 89.0,
+            "sensible_error_rate": 90.9090909090909,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 72.0,
+            "sensible_error_rate": 96.42857142857143,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Progressive LoRA": {
+          "exact_accuracy": {
+            "accuracy": 36.36363636363637,
+            "sensible_error_rate": 63.49206349206349,
+            "catastrophic_error_rate": 31.746031746031743,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 57.99999999999999,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 56.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 100.0,
+            "delegation_rate": 99.0
+          },
+          "adversarial": {
+            "accuracy": 60.0,
+            "sensible_error_rate": 75.0,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 42.0,
+            "sensible_error_rate": 46.55172413793103,
+            "catastrophic_error_rate": 50.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        },
+        "Qwen2.5-1.5B + Dream LoRA": {
+          "exact_accuracy": {
+            "accuracy": 60.60606060606061,
+            "sensible_error_rate": 74.35897435897436,
+            "catastrophic_error_rate": 17.94871794871795,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "number_sense": {
+            "accuracy": 60.0,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "self_awareness": {
+            "accuracy": 55.00000000000001,
+            "sensible_error_rate": null,
+            "catastrophic_error_rate": null,
+            "delegation_accuracy": 100.0,
+            "delegation_rate": 100.0
+          },
+          "adversarial": {
+            "accuracy": 63.0,
+            "sensible_error_rate": 70.27027027027027,
+            "catastrophic_error_rate": 0.0,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          },
+          "error_patterns": {
+            "accuracy": 53.0,
+            "sensible_error_rate": 74.46808510638297,
+            "catastrophic_error_rate": 19.148936170212767,
+            "delegation_accuracy": null,
+            "delegation_rate": null
+          }
+        }
+      }
+    }
+  ]
+}

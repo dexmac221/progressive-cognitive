@@ -7,8 +7,6 @@
 
 ## The Idea in 30 Seconds
 
-> 📖 **Read the full article on Towards Data Science:** [Link to TDS Article (Coming Soon)](#)
-
 Generative models waste billions of parameters simulating deterministic operations (calculations, lookups, retrieval) that a simple tool solves perfectly. This project demonstrates an alternative approach: **training an LLM through 4 progressive cognitive phases**, much like a human who learns, compresses, delegates, and orchestrates.
 
 The result is a model that:
@@ -162,7 +160,8 @@ Calculate: 45 * 38 = 1710
 
 ### Phase 2: Consolidation (The Most Significant Data Point)
 
-1. **Structured Pruning** — Removal of 30% of LoRA weights by magnitude
+1. **Pruning & Compression** — Currently implemented as magnitude pruning (removing 30% of LoRA weights). 
+   *🚀 Evolution: "Dream Pruning" (SVD Low-Rank Factorization)*. Magnitude pruning is brutal. The next evolution is proportional downscaling: instead of zeroing out weights, we reduce the rank of the LoRA matrix via Singular Value Decomposition (SVD). If trained at rank 16, we decompose it to rank 8. This maintains the principal directions in the weight space — the "logical connections" — and discards only the noise. We don't cut; we compress while preserving the relational structure.
 2. **Fine-tuning on Approximated Targets** — No longer exact answers, but estimates:
 
 ```
@@ -216,13 +215,14 @@ The evaluation framework (`evaluation_framework.py`) does not use traditional be
 | 4 | **Robustness** | Does it resist traps? | `x × 0`, order of operations, carryovers, negative numbers |
 | 5 | **Error Patterns** | HOW does it fail? | An error "roughly 700 vs 714" ≠ an error "42 × 17 = 3" |
 
-### The 3 Compared Models
+### The 4 Compared Models
 
 | Model | Description |
 |-------|-------------|
-| **Baseline** | Qwen2.5-1.5B base (no fine-tuning) |
-| **Progressive** | Qwen2.5-1.5B + LoRA 4 cognitive phases + 30% pruning |
-| **Tool-only** | Qwen2.5-1.5B base + deterministic calculator |
+| **Base** | Qwen2.5-1.5B base (no fine-tuning) |
+| **Flat-LoRA** | Qwen2.5-1.5B + LoRA trained on all data mixed together (brute-force) |
+| **Progressive-LoRA** | Qwen2.5-1.5B + LoRA trained through 4 cognitive phases + magnitude pruning |
+| **Dream-LoRA** | Qwen2.5-1.5B + LoRA trained through 4 cognitive phases + SVD Low-Rank Factorization |
 
 ### Error Classification
 
@@ -243,22 +243,26 @@ The framework classifies each error qualitatively:
 
 ## Real Results (Qwen2.5-1.5B)
 
-We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing the base model (without fine-tuning) with the model trained through the 4 cognitive phases (with merged LoRA weights). The results from this pilot study strongly suggest the effectiveness of the approach.
+We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing the Base model, a "Flat-LoRA" (trained brute-force on all data mixed together), our "Progressive-LoRA" (trained through the 4 cognitive phases with magnitude pruning), and our latest **"Dream-LoRA"** (using SVD Low-Rank Factorization). The results reveal a fascinating phenomenon: **The Paradox of Accuracy**.
 
-### Direct Comparison (Base vs Progressive)
+### The Paradox of Accuracy
 
-| Cognitive Dimension | Qwen2.5-1.5B (Base) | Qwen2.5-1.5B (Progressive) | Variation | Insight |
-|---------------------|---------------------|----------------------------|-----------|---------|
-| **1. Exact Calculation** | 22.2% | **33.3%** | +11.1% | Training improves pure calculation, even if it's not the primary goal. |
-| **2. Number Sense** | 60.0% | **60.0%** | = | No *catastrophic forgetting*. Basic intuition is preserved. |
-| **3. Metacognition** | Correct Delegation: 90.9%<br>Delegation Rate: 80.0% | **Correct Delegation: 100%**<br>**Delegation Rate: 100%** | **Perfect** | **Strongest signal.** The model learns not to hallucinate: when the calculation is complex, it *always* and *correctly* delegates to the tool. |
-| **4. Robustness** | 25.0% (6 severe errors) | **60.0%** (0 severe errors) | **+35.0%** | **The most impressive result.** The base model falls into math traps. The progressive model resists and, if it fails, only makes "sensible" errors. |
+| Cognitive Dimension | Base | Flat-LoRA | Progressive-LoRA | **Dream-LoRA (SVD)** | Insight |
+|---------------------|------|-----------|------------------|----------------------|---------|
+| **1. Exact Calculation** | 22.2% | **61.1%** | 33.3% | **55.5%** | Flat-LoRA wins the classic benchmark, but Dream-LoRA recovers almost all of it without brute-force. |
+| **2. Number Sense** | 60.0% | 0.0% | 60.0% | **65.0%** | Flat-LoRA suffers *catastrophic forgetting* of mathematical intuition. Dream-LoRA actually *improves* it. |
+| **3. Metacognition** (Correct Delegation) | 90.9% | 0.0% | **100.0%** | **100.0%** | Flat-LoRA becomes arrogant and never delegates. Both Progressive models learn to *always* delegate correctly. |
+| **4. Robustness** | 25.0% | **85.0%** | 60.0% | 50.0% | Flat-LoRA memorizes patterns well, but the Progressive models achieve much higher "sensible error" rates when they fail. |
 
-### Error Pattern Analysis
+### Error Pattern Analysis: Not "Who Wins", but "What Intelligence is Needed?"
 
-It's not just about *how much* the model fails, but *how* it fails.
-- **Base Model**: Commits catastrophic errors (wrong orders of magnitude, invents numbers).
-- **Progressive Model**: **100%** of errors in robustness tests are classified as "sensible" (e.g., close estimates, same order of magnitude). The model has developed a functional mathematical intuition that prevents it from giving absurd answers.
+If we only looked at Exact Accuracy (like GSM8K), we would conclude Flat-LoRA is the best model. However, the qualitative analysis tells a different story:
+
+- **Flat-LoRA** acts like a broken calculator. It tries to compute everything in its weights, destroying its metacognition (0% delegation) and its number sense (0%).
+- **Progressive-LoRA (Magnitude Pruning)** acts like an expert, but the blunt pruning hurts its exact calculation capabilities.
+- **Dream-LoRA (SVD Pruning)** is the ultimate synthesis. By reducing the rank of the LoRA matrix instead of zeroing out weights, it compresses the knowledge while preserving the principal directions ("logical connections"). It achieves **55.5% exact accuracy** while maintaining **100% metacognition** and improving number sense to **65%**. When it makes an error, **87.5% of its errors are "sensible"** (e.g., correct order of magnitude).
+
+> *"A model that is off by 5% but knows when to delegate is infinitely more useful than a model that guesses exactly 70% of the time but confidently hallucinates absurd numbers the remaining 30%."*
 
 ---
 
@@ -267,7 +271,7 @@ It's not just about *how much* the model fails, but *how* it fails.
 As a pilot study, this project has several limitations that will be addressed in future iterations:
 - **Domain Specificity**: The current implementation is strictly limited to arithmetic operations. It remains to be seen how well this cognitive architecture generalizes to other domains like coding or logical reasoning.
 - **Scale**: The experiments were conducted on relatively small models (up to 1.5B parameters) and with a limited dataset (~6,000 samples).
-- **Baseline Comparison**: While the progressive model outperforms the base model, a rigorous A/B test against a model fine-tuned on the exact same data *without* the progressive curriculum is currently underway to isolate the specific impact of the 4-phase architecture.
+- **Pruning Brutality**: While "Dream Pruning" (SVD Low-Rank Factorization) proved highly effective, further research is needed to dynamically determine the optimal rank reduction per layer rather than applying a static target rank.
 
 ---
 
@@ -277,9 +281,9 @@ As a pilot study, this project has several limitations that will be addressed in
 - [x] Scaling on distilgpt2 (82M) with LoRA
 - [x] Comparative evaluation framework (5 dimensions)
 - [x] Training on Qwen2.5-1.5B on Hugging Face Spaces (T4 GPU)
-- [x] Real comparative evaluation (Base vs Progressive)
+- [x] Real comparative A/B evaluation (Base vs Flat vs Progressive)
+- [x] Implement "Dream Pruning" (SVD Low-Rank Factorization)
 - [ ] Scaling the domain beyond arithmetic (coding, reasoning)
-- [ ] Paper / article with full results
 
 ---
 

@@ -1,0 +1,17 @@
+
+FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-runtime
+
+WORKDIR /app
+
+# Fix for libgomp: Invalid value for environment variable OMP_NUM_THREADS
+ENV OMP_NUM_THREADS=1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install huggingface_hub
+
+COPY baseline_training.py .
+
+# Run a dummy HTTP server in the background to pass Hugging Face health check (port 7860)
+# and run the training script in the foreground
+CMD python -m http.server 7860 & python baseline_training.py

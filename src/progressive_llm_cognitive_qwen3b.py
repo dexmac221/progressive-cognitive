@@ -2,8 +2,8 @@
 ╔══════════════════════════════════════════════════════════════════╗
 ║   PROGRESSIVE COGNITIVE ARCHITECTURE — LLM Edition              ║
 ║                                                                  ║
-║   Base: Qwen2.5-1.5B + LoRA (Low-Rank Adaptation)              ║
-║   Method: LoRA for efficient training                           ║
+║   Base: Qwen2.5-3B                                              ║
+║   Method: LoRA (Low-Rank Adaptation) for efficient training     ║
 ║   Domain: Arithmetic → Intuition → Tool → Orchestration        ║
 ║                                                                  ║
 ║   The model goes through 4 cognitive phases, like a human:      ║
@@ -29,25 +29,25 @@ import gc
 from collections import defaultdict
 
 # ─────────────────────────────────────────────────────────────────
-# CONFIGURATION
+# CONFIGURAZIONE
 # ─────────────────────────────────────────────────────────────────
 
 class Config:
-    model_name = "Qwen/Qwen2.5-1.5B"
+    model_name = "Qwen/Qwen2.5-3B"
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    # LoRA — reduced trainable parameters
-    lora_r = 16               # decomposition rank (increased for larger model)
+    # LoRA — parametri trainabili ridotti
+    lora_r = 16               # rango della decomposizione
     lora_alpha = 32
     lora_dropout = 0.05
     
-    # Training per phase
-    batch_size = 4            # reduced to avoid OOM on T4 (16GB)
-    max_seq_len = 128         # increased for more complex tasks
+    # Training per fase
+    batch_size = 2            # ridotto per 3B su T4 (16GB)
+    max_seq_len = 128         # task aritmetici
     
-    # Phases (increased for GPU)
+    # Fasi (aumentate per GPU)
     phase1_epochs = 3
-    phase1_lr = 2e-4          # reduced learning rate for larger model
+    phase1_lr = 2e-4          # learning rate ridotto per modello più grande
     phase1_samples = 2000
     
     phase2_epochs = 3
@@ -64,14 +64,14 @@ class Config:
     
     # Pruning
     pruning_ratio = 0.30
-    dream_pruning_rank = 8    # Target rank for SVD Low-Rank Factorization
+    dream_pruning_rank = 8    # Rango target per SVD Low-Rank Factorization
     
-    # Numbers
+    # Numeri
     max_number = 9999
 
 
 # ─────────────────────────────────────────────────────────────────
-# DATA GENERATION — Progressive datasets
+# GENERAZIONE DATI — Dataset progressivi
 # ─────────────────────────────────────────────────────────────────
 
 class MathExpressionGenerator:
@@ -144,7 +144,7 @@ class MathExpressionGenerator:
 
 
 class PhaseDataset(Dataset):
-    """Dataset that generates text for each training phase."""
+    """Dataset generating text for each training phase."""
     
     def __init__(self, tokenizer, phase, n_samples, max_num=9999, max_len=64):
         self.tokenizer = tokenizer
@@ -221,7 +221,7 @@ class PhaseDataset(Dataset):
         return {
             'input_ids': input_ids,
             'attention_mask': attention_mask,
-            'labels': input_ids.clone(),  # causal LM: labels = shifted input
+            'labels': input_ids.clone(),  # causal LM: labels = input shifted
         }
 
 
@@ -301,7 +301,7 @@ class DreamPruner:
     """
     Dream Pruning (SVD Low-Rank Factorization).
     Instead of zeroing sparse weights, reduces the LoRA matrix rank
-    preserving the principal directions (the 'logical connections') and discarding noise.
+    preserving principal directions (the 'logical links') and discarding noise.
     """
     
     @staticmethod
@@ -310,7 +310,7 @@ class DreamPruner:
         stats = {'pruned_rank': target_rank, 'total_layers': 0}
         masks = {}
         
-        # Collect LoRA layers in pairs (A and B)
+        # Raccogliamo i layer LoRA a coppie (A e B)
         lora_layers = defaultdict(dict)
         for name, param in model.named_parameters():
             if 'lora_A' in name and param.requires_grad:
@@ -422,12 +422,12 @@ class ProgressiveLLMTrainer:
             r=config.lora_r,
             lora_alpha=config.lora_alpha,
             lora_dropout=config.lora_dropout,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # attention layers for Qwen/Llama
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],  # attention layers per Qwen/Llama
         )
         
         self.model = get_peft_model(self.base_model, lora_config)
         
-        # Move model to correct device (GPU if available)
+        # Sposta il modello sul device corretto (GPU se disponibile)
         self.model.to(self.config.device)
         
         trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -441,8 +441,8 @@ class ProgressiveLLMTrainer:
     def _banner(self):
         return """
 ╔══════════════════════════════════════════════════════════════╗
-║    PROGRESSIVE COGNITIVE ARCHITECTURE — LLM Edition          ║
-║    Qwen2.5-1.5B + LoRA + Progressive Pruning                 ║
+║    PROGRESSIVE COGNITIVE ARCHITECTURE — LLM Edition         ║
+║    Qwen2.5-3B + LoRA + Progressive Pruning                  ║
 ╚══════════════════════════════════════════════════════════════╝"""
     
     def _train_phase(self, phase_name, phase_label, dataset, epochs, lr, 
@@ -465,7 +465,7 @@ class ProgressiveLLMTrainer:
                 attention_mask = batch['attention_mask'].to(self.config.device)
                 labels = batch['labels'].to(self.config.device)
                 
-                # Mask pad tokens in labels
+                # Maschera i pad token nelle labels
                 labels[labels == self.tokenizer.pad_token_id] = -100
                 
                 outputs = self.model(
@@ -481,7 +481,7 @@ class ProgressiveLLMTrainer:
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
                 optimizer.step()
                 
-                # Re-apply pruning masks if active
+                # Ri-applica maschere di pruning se attive
                 if apply_masks and self.pruning_masks:
                     DreamPruner.apply_masks(self.model, self.pruning_masks)
                 
@@ -496,7 +496,7 @@ class ProgressiveLLMTrainer:
         return avg_loss
     
     def _generate_response(self, prompt, max_new_tokens=50):
-        """Generates a response from the model."""
+        """Genera una risposta dal modello."""
         self.model.eval()
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.config.device)
         
@@ -537,7 +537,7 @@ class ProgressiveLLMTrainer:
         print(f"  Example: '{dataset.data[0][:60]}...'\n")
         
         loss = self._train_phase(
-            "phase1", "Exact Calc", dataset,
+            "phase1", "Exact Calculation", dataset,
             self.config.phase1_epochs, self.config.phase1_lr
         )
         
@@ -561,7 +561,7 @@ class ProgressiveLLMTrainer:
         print("=" * 60 + "\n")
         
         # Step 1: Dream Pruning (SVD)
-        print(f"  ── Dream Pruning: LoRA rank reduction from {self.config.lora_r} to {self.config.dream_pruning_rank} ──")
+        print(f"  ── Dream Pruning: Rank reduction from {self.config.lora_r} to {self.config.dream_pruning_rank} ──")
         stats, self.pruning_masks = DreamPruner.svd_prune(
             self.model, self.config.dream_pruning_rank
         )
@@ -587,7 +587,7 @@ class ProgressiveLLMTrainer:
         )
         
         # Test
-        print(f"\n  ── Phase 2 Test: The model intuits ──")
+        print(f"\n  ── Phase 2 Test: The model estimates ──")
         test_prompts = ["Estimate: 347 + 891 =", "Estimate: 55 * 38 =", "Estimate: 1234 - 567 ="]
         for p in test_prompts:
             resp = self._generate_response(p, max_new_tokens=30)
@@ -596,7 +596,7 @@ class ProgressiveLLMTrainer:
         return loss
     
     # ═══════════════════════════════════════════════════════════
-    # PHASE 3: DELEGATION — Learns when to use the tool
+    # PHASE 3: DELEGATION — Learn when to use the tool
     # ═══════════════════════════════════════════════════════════
     
     def phase3_tool_delegation(self):
@@ -632,7 +632,7 @@ class ProgressiveLLMTrainer:
         for prompt, expr in test_cases:
             resp = self._generate_response(prompt, max_new_tokens=40)
             
-            # If the model suggests delegation, use the tool
+            # If model suggests delegation, use the tool
             uses_tool = "DELEGATE" in resp.upper()
             tool_result = ""
             if uses_tool:
@@ -652,7 +652,7 @@ class ProgressiveLLMTrainer:
     
     def phase4_orchestrate(self):
         print("\n" + "=" * 60)
-        print("  PHASE 4 — ORCHESTRATION: The expert who sees the big picture")
+        print("  PHASE 4 — ORCHESTRATION: The expert who sees the bug")
         print("  Goal: intuition → routing → tool → validation")
         print("=" * 60 + "\n")
         
@@ -726,7 +726,7 @@ class ProgressiveLLMTrainer:
         """Executes all 4 cognitive phases in sequence."""
         start = time.time()
         
-        # The 4 phases
+        # Le 4 fasi
         loss1 = self.phase1_learn_exact()
         loss2 = self.phase2_consolidate()
         loss3 = self.phase3_tool_delegation()
@@ -734,10 +734,10 @@ class ProgressiveLLMTrainer:
         
         elapsed = time.time() - start
         
-        # Final report
+        # Report finale
         self._final_report(elapsed)
         
-        # Save
+        # Salva
         self._save_everything()
     
     def _final_report(self, elapsed):
@@ -758,11 +758,11 @@ class ProgressiveLLMTrainer:
   Cognitive evolution:
     Phase 1 (Exact calc)     │ Loss: {self.history['phase1_loss'][-1]:.4f}
     Phase 2 (Intuition)      │ Loss: {self.history['phase2_loss'][-1]:.4f} │ SVD Rank: {self.config.dream_pruning_rank}
-    Phase 3 (Tool delegation)│ Loss: {self.history['phase3_loss'][-1]:.4f}
+    Phase 3 (Tool delegation) │ Loss: {self.history['phase3_loss'][-1]:.4f}
     Phase 4 (Orchestration)  │ Loss: {self.history['phase4_loss'][-1]:.4f}
 
   ╔════════════════════════════════════════════════════════════╗
-  ║  The {total_params/1e6:.0f}M of {self.config.model_name} are the 'long-term memory'         ║
+  ║  The {total_params/1e6:.0f}M of {self.config.model_name} are the 'long-term memory'       ║
   ║  The low-rank LoRA weights are the 'intuition'             ║
   ║  The calculator is the deterministic tool                   ║
   ║  Together: a layered cognitive system                       ║
@@ -798,13 +798,13 @@ class ProgressiveLLMTrainer:
         
         print(f"  Saved to: {out_dir}/")
         print(f"  Total size: {total_size / 1024 / 1024:.1f} MB")
-        print(f"  (Only LoRA adapters — the base model is downloaded from HuggingFace)")
+        print(f"  (Only LoRA adapters — base model downloads from HuggingFace)")
         
         # Push to Hugging Face Hub
         try:
             from huggingface_hub import HfApi
             api = HfApi()
-            repo_id = os.environ.get("HF_REPO_ID", "dexmac/progressive-cognitive-lora")
+            repo_id = os.environ.get("HF_REPO_ID", "dexmac/progressive-cognitive-qwen3b-dream-lora")
             print(f"  Uploading to Hugging Face Hub: {repo_id}...")
             api.create_repo(repo_id=repo_id, exist_ok=True)
             api.upload_folder(
@@ -821,10 +821,10 @@ class ProgressiveLLMTrainer:
             try:
                 from huggingface_hub import HfApi
                 api = HfApi()
-                print("  Pausing the Space to save credits...")
+                print("  Pausing Space to save credits...")
                 api.pause_space(repo_id=os.environ.get("SPACE_ID"))
             except Exception as e:
-                print(f"  Error pausing the Space: {e}")
+                print(f"  Error pausing Space: {e}")
 
 
 # ─────────────────────────────────────────────────────────────────
