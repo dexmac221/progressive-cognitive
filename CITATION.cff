@@ -13,17 +13,18 @@ authors:
     # given-names: Your
     # family-names: Name
     # orcid: https://orcid.org/0000-0000-0000-0000
-date-released: "2026-02-22"
-version: "0.1.0-pilot"
+date-released: "2026-02-28"
+version: "1.0.0"
 license: Apache-2.0
 repository-code: "https://github.com/dexmac221/progressive-cognitive"
 keywords:
   - cognitive-architecture
   - progressive-training
-  - structured-pruning
+  - dream-pruning
+  - svd-compression
   - tool-delegation
   - metacognition
   - LoRA
   - LLM
-  - intuition
+  - inverse-scaling
   - System-1-System-2

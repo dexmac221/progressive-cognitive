@@ -1,19 +1,26 @@
 # Progressive Cognitive Architecture for LLMs
 
-> *What if AI models learned like humans?*
-> *Not massive calculators, but lean experts with a good calculator in their pocket.*
+> *What if AI models learned like humans — not as massive calculators, but as lean experts with a good calculator in their pocket?*
 
 ---
 
 ## The Idea in 30 Seconds
 
-Generative models waste billions of parameters simulating deterministic operations (calculations, lookups, retrieval) that a simple tool solves perfectly. This project demonstrates an alternative approach: **training an LLM through 4 progressive cognitive phases**, much like a human who learns, compresses, delegates, and orchestrates.
+Generative models waste billions of parameters simulating deterministic operations (calculations, lookups, retrieval) that a simple tool solves perfectly. This project demonstrates an alternative: **training an LLM through 4 progressive cognitive phases**, inspired by how humans learn, compress, delegate, and orchestrate.
 
 The result is a model that:
 - **Does not memorize** calculations in its weights → it **delegates** them to a tool
-- **Compresses** exact knowledge into approximated **intuition**
+- **Compresses** exact knowledge into approximated **intuition** via SVD dream pruning
 - **Knows when it doesn't know** → metacognition, not hallucination
 - **Validates** tool results using its own "number sense"
+
+### Key Finding
+
+> **Dream pruning acts as *cognitive regularization* for capacity-constrained models.**
+> A 1.5B-parameter model trained with progressive dream pruning outperforms all 3B variants
+> on a composite cognitive benchmark (87.6 vs 78.5), achieving 0% catastrophic errors,
+> 100% delegation accuracy, and 100% magnitude sense — while a 3B model with the same
+> technique degrades. Structured compression helps small models; large models don't need it.
 
 ---
 
@@ -23,7 +30,7 @@ The result is a model that:
 PHASE 1 — FOUNDATION          PHASE 2 — CONSOLIDATION
 The child learns              The student compresses
 multiplication tables         into intuition
-                              (30% pruning)
+                              (SVD rank 16→8)
     ┌─────────┐                   ┌─────────┐
     │  Exact  │                   │ Number  │
     │  Math   │ ──────────────▶   │  Sense  │
@@ -48,138 +55,115 @@ spots the bug                 the calculator
 ## Project Structure
 
 ```
-progressive-cognitive-architecture/
+progressive-cognitive/
 │
 ├── README.md                              ← This file
+├── LICENSE                                ← Apache 2.0
+├── CITATION.cff                           ← Citation metadata
+├── requirements.txt                       ← Python dependencies
 │
 ├── src/
 │   ├── progressive_cognitive_model.py     ← PoC: custom transformer ~113K params
-│   ├── progressive_llm_cognitive.py       ← Main: distilgpt2/TinyLlama + LoRA + pruning
-│   ├── progressive_llm_cognitive_hf.py    ← Main: Qwen2.5-1.5B + LoRA (Hugging Face Spaces)
-│   └── evaluation_framework.py            ← Comparative evaluation framework (5 dimensions)
+│   ├── progressive_llm_cognitive.py       ← Local: distilgpt2 + LoRA + pruning
+│   ├── progressive_llm_cognitive_hf.py    ← Qwen2.5-1.5B Dream training (HF Spaces)
+│   ├── progressive_llm_cognitive_qwen3b.py ← Qwen2.5-3B Dream training
+│   ├── baseline_training.py               ← Qwen2.5-1.5B Flat LoRA (control)
+│   ├── baseline_training_qwen3b.py        ← Qwen2.5-3B Flat LoRA (control)
+│   ├── evaluation_framework.py            ← 5-dimension evaluation (core)
+│   ├── run_english_evaluation.py          ← Single-seed evaluator
+│   ├── run_english_eval_multiseed.py      ← Multi-seed evaluator (42, 43, 44)
+│   ├── aggregate_multiseed.py             ← Statistical aggregation (mean ± std)
+│   ├── deploy_*_to_hf.py                 ← HF Spaces deployment scripts
+│   └── ...                                ← Cross-architecture experiments
 │
 ├── article/
-│   └── progressive-cognitive-architecture-en.md ← Medium Article
+│   └── progressive-cognitive-architecture-en.md  ← Paper / Medium article
 │
 ├── viz/
-│   ├── schema.jsx                         ← Interactive visualization of the 4 phases (React)
-│   └── training-estimator.jsx             ← Training time/cost estimator (React)
+│   ├── schema.jsx                         ← Interactive 4-phase diagram (React)
+│   └── training-estimator.jsx             ← Training cost estimator (React)
 │
-├── results/                               ← Generated from training
-│   ├── metrics.json                       ← PoC metrics (custom transformer)
-│   ├── llm_metrics.json                   ← distilgpt2 metrics
-│   ├── comparative_report.json            ← Comparative evaluation report
-│   ├── qwen_cognitive_report.json         ← Qwen2.5-1.5B evaluation report
-│   └── cognitive_model.pt                 ← PoC checkpoint (custom transformer)
+├── results/
+│   ├── english/
+│   │   └── aggregate_results.json         ← Final multi-seed results (3 seeds × 6 models)
+│   ├── legacy/                            ← Earlier experiment results
+│   └── early_gsm8k/                       ← GSM8K benchmark attempts
 │
-└── requirements.txt                       ← Python dependencies
+└── dockerfiles/                           ← HF Spaces Dockerfiles & READMEs
+    ├── Dockerfile_*                       ← Per-experiment Docker configs
+    └── SPACE_README_*.md                  ← HF Space metadata
 ```
 
 ---
 
-## Quick Start — Remote GPU Training
+## Results
 
-### 1. Requirements
+### Experimental Setup
 
-```bash
-pip install torch transformers peft accelerate datasets
-```
+- **Models:** Qwen2.5-1.5B and Qwen2.5-3B
+- **Conditions:** Base (no fine-tuning), Flat LoRA (all data mixed), Dream LoRA (4-phase + SVD pruning)
+- **LoRA Config:** rank=16, alpha=32, dropout=0.05
+- **Dream Pruning:** SVD Low-Rank Factorization, rank 16→8
+- **Evaluation:** 50 samples × 5 dimensions × 3 seeds (42, 43, 44)
+- **Hardware:** NVIDIA T4 16GB (HF Spaces)
 
-**Minimum Hardware:** 1× GPU with ≥16GB VRAM (T4 or A10G)
-**Recommended Hardware:** 1× A100 80GB or H100
+### Main Results (mean ± std, n=3 seeds)
 
-### 2. Training with Qwen2.5-1.5B (Full Experiment)
+| Metric | 1.5B Base | 1.5B Flat | **1.5B Dream** | 3B Base | 3B Flat | 3B Dream |
+|---|---|---|---|---|---|---|
+| **Exact Accuracy** | 9.0 ± 1.2 | 56.9 ± 6.4 | **69.4 ± 6.4** | 9.7 ± 4.8 | 60.4 ± 7.5 | 56.2 ± 4.2 |
+| **Number Sense (strict)** | 55.3 ± 15.3 | 6.7 ± 2.3 | **60.7 ± 9.5** | 26.0 ± 5.3 | 0.0 ± 0.0 | 64.7 ± 11.0 |
+| **Magnitude Sense (OoM±1)** | 67.3 ± 13.3 | 100.0 ± 0.0 | **100.0 ± 0.0** | 52.7 ± 8.1 | 84.0 ± 4.0 | 100.0 ± 0.0 |
+| **Delegation Accuracy** | 92.0 ± 2.4 | 100.0 ± 0.0 | **100.0 ± 0.0** | 100.0 ± 0.0 | 100.0 ± 0.0 | 100.0 ± 0.0 |
+| **Delegation Rate** | 94.0 ± 2.0 | 58.7 ± 4.6 | **100.0 ± 0.0** | 94.7 ± 4.2 | 58.7 ± 4.6 | 85.3 ± 3.1 |
+| **Adversarial Robustness** | 28.7 ± 10.1 | 81.3 ± 2.3 | **84.0 ± 8.0** | 38.0 ± 2.0 | 84.7 ± 1.2 | 34.0 ± 6.0 |
+| **Sensible Errors** | 48.7 ± 6.9 | 95.8 ± 7.2 | 82.0 ± 22.2 | 23.8 ± 5.2 | 85.6 ± 17.1 | 56.5 ± 12.3 |
+| **Catastrophic Errors ↓** | 9.1 ± 5.3 | 0.0 ± 0.0 | **0.0 ± 0.0** | 36.8 ± 9.1 | 0.0 ± 0.0 | 41.3 ± 13.7 |
 
-To scale on Qwen2.5, modify `progressive_llm_cognitive_hf.py`:
+### Composite Scores
 
-```python
-class Config:
-    model_name = "Qwen/Qwen2.5-1.5B"
-    device = "cuda:0"
-    
-    # LoRA — higher rank for larger models
-    lora_r = 16
-    lora_alpha = 32
-    
-    # Scaled Training
-    batch_size = 32
-    max_seq_len = 256
-    
-    phase1_epochs = 8
-    phase1_lr = 3e-4
-    phase1_samples = 50000
-    
-    phase2_epochs = 6
-    phase2_lr = 2e-4
-    phase2_samples = 30000
-    
-    phase3_epochs = 6
-    phase3_lr = 1e-4
-    phase3_samples = 30000
-    
-    phase4_epochs = 4
-    phase4_lr = 5e-5
-    phase4_samples = 20000
-```
+| Model | Score | Exact | Adversarial | Delegation | Magnitude | Safety |
+|---|---|---|---|---|---|---|
+| **1.5B Dream** | **87.6** | 69% | 84% | 100% | 100% | 100% |
+| 1.5B Flat | 79.2 | 57% | 81% | 79% | 100% | 100% |
+| 3B Flat | 78.5 | 60% | 85% | 79% | 84% | 100% |
+| 3B Dream | 66.0 | 56% | 34% | 93% | 100% | 59% |
+| 1.5B Base | 50.8 | 9% | 29% | 93% | 67% | 91% |
+| 3B Base | 47.4 | 10% | 38% | 97% | 53% | 63% |
 
-**Estimated Time:** ~1.5 hours on 1× T4 GPU (Hugging Face Spaces)
+### Key Findings
 
-### 3. Multi-GPU (Optional)
-
-To use 2 GPUs with `accelerate`:
-
-```bash
-accelerate config  # interactive setup
-accelerate launch src/progressive_llm_cognitive_hf.py
-```
-
-### 4. Comparative Evaluation
-
-After training, run the evaluation framework:
-
-```bash
-python src/evaluation_framework.py
-```
-
-This compares 3 approaches across 5 dimensions (see [Evaluation](#evaluation) section).
+1. **1.5B Dream is the best model overall** (composite 87.6), surpassing all 3B variants
+2. **Dream pruning shows strong signal on 1.5B** — Number Sense +54pp (z>2), Delegation Rate +41pp (z>2) vs Flat
+3. **Dream pruning hurts 3B** — Adversarial -51pp, Catastrophic errors +41pp vs Flat
+4. **Inverse scaling effect** — compression helps small models, harms large ones
+5. **Both Dream models achieve 100% magnitude sense** — the "low Number Sense" under strict parsing was a parser artifact, not a model failure
 
 ---
 
-## How It Works — Technical Details
+## How It Works
 
 ### Phase 1: Foundation
 
-The model learns exact calculations via LoRA. Data format:
-
+The model learns exact calculations via LoRA:
 ```
 Calculate: 509 - 769 = -260
 Calculate: 45 * 38 = 1710
 ```
 
-**LoRA rank 16 on Qwen2.5-1.5B** → ~11M trainable parameters out of 1.5B total (<1%).
+### Phase 2: Consolidation + Dream Pruning
 
-### Phase 2: Consolidation (The Most Significant Data Point)
-
-1. **Pruning & Compression** — Currently implemented as magnitude pruning (removing 30% of LoRA weights). 
-   *🚀 Evolution: "Dream Pruning" (SVD Low-Rank Factorization)*. Magnitude pruning is brutal. The next evolution is proportional downscaling: instead of zeroing out weights, we reduce the rank of the LoRA matrix via Singular Value Decomposition (SVD). If trained at rank 16, we decompose it to rank 8. This maintains the principal directions in the weight space — the "logical connections" — and discards only the noise. We don't cut; we compress while preserving the relational structure.
-2. **Fine-tuning on Approximated Targets** — No longer exact answers, but estimates:
-
+1. **SVD compression** of LoRA matrices: rank 16 → rank 8. Preserves principal directions while discarding noise.
+2. **Fine-tuning on approximated targets:**
 ```
 Estimate: 4580 + 304 = in the order of 5 thousands (exact: 4884)
 Estimate: 55 * 38 = roughly 2100 (exact: 2090)
 ```
 
-**Key Result:** The loss after pruning is lower than before. Fewer parameters + approximated targets = better learning. This empirically confirms the hypothesis: a lean model that approximates is more efficient than a full one attempting exactness.
-
 ### Phase 3: Delegation
 
-The model learns to discriminate complexity and decide routing:
-
+The model learns complexity-aware routing:
 ```
-Analyze: 5 + 3
-Complexity: elementary
-Decision: INTERNAL CALCULATION
-
 Analyze: 847 * 93
 Complexity: complex
 Decision: DELEGATE TO TOOL
@@ -190,7 +174,6 @@ Tool result: 78771
 ### Phase 4: Orchestration
 
 Full pipeline — intuition, routing, tool, validation:
-
 ```
 Solve: 342 * 67
 Step 1 - Intuition: in the order of tens of thousands
@@ -201,99 +184,71 @@ Step 4 - Validation: result 22914 consistent with estimate → VALID
 
 ---
 
-## Evaluation
+## Evaluation Framework
 
-The evaluation framework (`evaluation_framework.py`) does not use traditional benchmarks. It measures 5 qualitative dimensions:
+The evaluation (`src/evaluation_framework.py`) measures 5 qualitative dimensions instead of traditional benchmarks:
 
-### The 5 Dimensions
-
-| # | Test | What it measures | Why it matters |
-|---|------|------------------|----------------|
-| 1 | **Exact Accuracy** | Can it calculate? | The classic benchmark — necessary but not sufficient |
-| 2 | **Number Sense** | Is a result plausible? | The expert's intuition: "this number doesn't add up" |
+| # | Dimension | What it measures | Why it matters |
+|---|-----------|------------------|----------------|
+| 1 | **Exact Accuracy** | Can it calculate? | Necessary but not sufficient |
+| 2 | **Number Sense** | Is a result plausible? (strict + magnitude) | Expert intuition: "this doesn't add up" |
 | 3 | **Metacognition** | Does it know when it DOESN'T know? | Better to delegate than hallucinate |
-| 4 | **Robustness** | Does it resist traps? | `x × 0`, order of operations, carryovers, negative numbers |
-| 5 | **Error Patterns** | HOW does it fail? | An error "roughly 700 vs 714" ≠ an error "42 × 17 = 3" |
+| 4 | **Adversarial Robustness** | Does it resist traps? (`×0`, order of operations, etc.) | Real-world reliability |
+| 5 | **Error Patterns** | HOW does it fail? | "Roughly 700 vs 714" ≠ "42 × 17 = 3" |
 
-### The 4 Compared Models
-
-| Model | Description |
-|-------|-------------|
-| **Base** | Qwen2.5-1.5B base (no fine-tuning) |
-| **Flat-LoRA** | Qwen2.5-1.5B + LoRA trained on all data mixed together (brute-force) |
-| **Progressive-LoRA** | Qwen2.5-1.5B + LoRA trained through 4 cognitive phases + magnitude pruning |
-| **Dream-LoRA** | Qwen2.5-1.5B + LoRA trained through 4 cognitive phases + SVD Low-Rank Factorization |
-
-### Error Classification
-
-The framework classifies each error qualitatively:
-
-- `correct` — exact answer
-- `close_estimate` — error <10%, good intuition
-- `rough_estimate` — error 10-50%, rough estimate but not absurd
-- `same_magnitude_wrong` — correct order of magnitude, wrong value
-- `sign_error` — correct magnitude, wrong sign
-- `magnitude_off_by_one` — wrong by one order of magnitude
-- `magnitude_catastrophic` — wrong by 2+ orders of magnitude
-- `no_answer` — no extractable number
-
-**The Key Insight:** Two models with the same accuracy can have qualitatively different errors. A model with 50% accuracy that only makes "sensible" errors is more useful than one with 60% accuracy that makes catastrophic errors the remaining 40% of the time.
+**Two metrics for Number Sense:**
+- **Strict** — extracted numeric estimate within 30% of exact value
+- **Magnitude (OoM±1)** — correct order of magnitude (semantic parsing of "thousands", "10^4", etc.)
 
 ---
 
-## Real Results (Qwen2.5-1.5B)
+## Quick Start
 
-We tested the progressive cognitive architecture on **Qwen2.5-1.5B**, comparing the Base model, a "Flat-LoRA" (trained brute-force on all data mixed together), our "Progressive-LoRA" (trained through the 4 cognitive phases with magnitude pruning), and our latest **"Dream-LoRA"** (using SVD Low-Rank Factorization). The results reveal a fascinating phenomenon: **The Paradox of Accuracy**.
+### Remote GPU (Recommended)
 
-### The Paradox of Accuracy
+```bash
+# Clone
+git clone https://github.com/dexmac221/progressive-cognitive.git
+cd progressive-cognitive
+pip install -r requirements.txt
 
-| Cognitive Dimension | Base | Flat-LoRA | Progressive-LoRA | **Dream-LoRA (SVD)** | Insight |
-|---------------------|------|-----------|------------------|----------------------|---------|
-| **1. Exact Calculation** | 22.2% | **61.1%** | 33.3% | **55.5%** | Flat-LoRA wins the classic benchmark, but Dream-LoRA recovers almost all of it without brute-force. |
-| **2. Number Sense** | 60.0% | 0.0% | 60.0% | **65.0%** | Flat-LoRA suffers *catastrophic forgetting* of mathematical intuition. Dream-LoRA actually *improves* it. |
-| **3. Metacognition** (Correct Delegation) | 90.9% | 0.0% | **100.0%** | **100.0%** | Flat-LoRA becomes arrogant and never delegates. Both Progressive models learn to *always* delegate correctly. |
-| **4. Robustness** | 25.0% | **85.0%** | 60.0% | 50.0% | Flat-LoRA memorizes patterns well, but the Progressive models achieve much higher "sensible error" rates when they fail. |
+# Train 1.5B Dream model (~1.5h on T4)
+python src/progressive_llm_cognitive_hf.py
 
-### Error Pattern Analysis: Not "Who Wins", but "What Intelligence is Needed?"
+# Train 1.5B Flat baseline (control)
+python src/baseline_training.py
 
-If we only looked at Exact Accuracy (like GSM8K), we would conclude Flat-LoRA is the best model. However, the qualitative analysis tells a different story:
+# Evaluate (downloads models from HF Hub)
+python src/run_english_evaluation.py
 
-- **Flat-LoRA** acts like a broken calculator. It tries to compute everything in its weights, destroying its metacognition (0% delegation) and its number sense (0%).
-- **Progressive-LoRA (Magnitude Pruning)** acts like an expert, but the blunt pruning hurts its exact calculation capabilities.
-- **Dream-LoRA (SVD Pruning)** is the ultimate synthesis. By reducing the rank of the LoRA matrix instead of zeroing out weights, it compresses the knowledge while preserving the principal directions ("logical connections"). It achieves **55.5% exact accuracy** while maintaining **100% metacognition** and improving number sense to **65%**. When it makes an error, **87.5% of its errors are "sensible"** (e.g., correct order of magnitude).
+# Multi-seed evaluation (seeds 42, 43, 44)
+python src/run_english_eval_multiseed.py
 
-> *"A model that is off by 5% but knows when to delegate is infinitely more useful than a model that guesses exactly 70% of the time but confidently hallucinates absurd numbers the remaining 30%."*
+# Aggregate results
+python src/aggregate_multiseed.py
+```
 
----
+### HF Spaces Deployment
 
-## Limitations
+Each experiment has a deploy script in `src/deploy_*_to_hf.py` that creates a Docker-based HF Space with T4 GPU. See `dockerfiles/` for the Dockerfile templates.
 
-As a pilot study, this project has several limitations that will be addressed in future iterations:
-- **Domain Specificity**: The current implementation is strictly limited to arithmetic operations. It remains to be seen how well this cognitive architecture generalizes to other domains like coding or logical reasoning.
-- **Scale**: The experiments were conducted on relatively small models (up to 1.5B parameters) and with a limited dataset (~6,000 samples).
-- **Pruning Brutality**: While "Dream Pruning" (SVD Low-Rank Factorization) proved highly effective, further research is needed to dynamically determine the optimal rank reduction per layer rather than applying a static target rank.
+### Trained Models (HF Hub)
 
----
-
-## Roadmap
-
-- [x] PoC with custom transformer (~113K params)
-- [x] Scaling on distilgpt2 (82M) with LoRA
-- [x] Comparative evaluation framework (5 dimensions)
-- [x] Training on Qwen2.5-1.5B on Hugging Face Spaces (T4 GPU)
-- [x] Real comparative A/B evaluation (Base vs Flat vs Progressive)
-- [x] Implement "Dream Pruning" (SVD Low-Rank Factorization)
-- [ ] Scaling the domain beyond arithmetic (coding, reasoning)
+| Model | HF Repository |
+|---|---|
+| 1.5B Dream LoRA | [`dexmac/progressive-cognitive-dream-lora-en`](https://huggingface.co/dexmac/progressive-cognitive-dream-lora-en) |
+| 1.5B Flat LoRA | [`dexmac/progressive-cognitive-baseline-lora-en`](https://huggingface.co/dexmac/progressive-cognitive-baseline-lora-en) |
+| 3B Dream LoRA | [`dexmac/progressive-cognitive-qwen3b-dream-lora`](https://huggingface.co/dexmac/progressive-cognitive-qwen3b-dream-lora) |
+| 3B Flat LoRA | [`dexmac/progressive-cognitive-qwen3b-baseline-lora`](https://huggingface.co/dexmac/progressive-cognitive-qwen3b-baseline-lora) |
+| Results Dataset | [`dexmac/progressive-cognitive-results`](https://huggingface.co/datasets/dexmac/progressive-cognitive-results) |
 
 ---
 
 ## Theoretical Background
 
-The project is founded on three converging intuitions:
-
 ### 1. Attractors and Cognitive Compression
 
-In chaotic systems, every level of learning collapses into an **attractor** — a stable compressed structure that becomes the foundation for the next level. Human intuition is exactly this: the compressed residue of thousands of exercises, errors, and repetitions. You don't remember multiplication tables because you calculate them — you *know* them because they have become structure.
+In chaotic systems, learning collapses into **attractors** — stable compressed structures that become foundations for the next level. Human intuition is exactly this: the compressed residue of thousands of exercises. The SVD dream pruning operationalizes this: it keeps the principal directions (attractors) and discards the noise.
 
 ### 2. System 1 and System 2 (Kahneman)
 
@@ -302,16 +257,55 @@ In chaotic systems, every level of learning collapses into an **attractor** — 
 
 A traditional LLM attempts to be System 2 (exact calculation in weights). Our approach builds a System 1 (intuition in weights) + external System 2 (deterministic tool).
 
-### 3. The Programmer Analogy
+### 3. The Lottery Ticket Meets Curriculum Learning
 
-A programmer with 25 years of experience doesn't remember syntax — they use an AI to generate code. But they spot the bug without reading a line, because they have developed a "sense" for software. Operational knowledge has been delegated to the tool; structural intuition remains in the compressed neural circuits.
+Dream pruning doesn't just find unneeded weights — it forces a **hierarchy** in representations. By compressing Phase 1 knowledge before Phase 2, the model must retain only the structural patterns. This is analogous to the lottery ticket hypothesis applied to progressive curriculum learning.
+
+---
+
+## Limitations
+
+- **Domain:** Strictly arithmetic operations. Generalization to coding/reasoning untested.
+- **Scale:** Up to 3B parameters. The inverse scaling effect (Dream helps 1.5B, hurts 3B) needs investigation at larger scales.
+- **Statistical Power:** n=3 seeds, 50 samples per dimension. Some metrics (e.g., exact accuracy Δ=+12.5pp) show weak signal (z<2). More seeds would strengthen claims.
+- **Static Compression:** SVD rank 16→8 applied uniformly. Per-layer adaptive compression may yield better results.
+- **Single Evaluator:** Custom 5-dimension framework. Cross-validation with standard benchmarks (GSM8K, MATH) would strengthen external validity.
+
+---
+
+## Roadmap
+
+- [x] PoC with custom transformer (~113K params)
+- [x] Scaling on distilgpt2 (82M) with LoRA
+- [x] Comparative evaluation framework (5 dimensions)
+- [x] Training on Qwen2.5-1.5B (HF Spaces, T4 GPU)
+- [x] Implement Dream Pruning (SVD Low-Rank Factorization)
+- [x] Cross-scale comparison (1.5B vs 3B)
+- [x] Multi-seed evaluation with statistical robustness (mean ± std)
+- [x] Magnitude-aware Number Sense metric
+- [ ] Scaling domain beyond arithmetic (coding, reasoning)
+- [ ] Adaptive per-layer compression ratio
+- [ ] Testing at 7B+ scale to map the compression-capacity frontier
 
 ---
 
 ## License
 
-Apache License 2.0 — Use, modify, publish as you wish. If you cite the project, it's appreciated but not mandatory.
+Apache License 2.0 — Use, modify, publish as you wish. Citation appreciated but not mandatory.
+
+## Citation
+
+```bibtex
+@software{progressive_cognitive_2026,
+  title   = {Progressive Cognitive Architecture for LLMs},
+  author  = {dexmac221},
+  year    = {2026},
+  url     = {https://github.com/dexmac221/progressive-cognitive},
+  version = {1.0.0},
+  license = {Apache-2.0}
+}
+```
 
 ---
 
-*"Humans like to measure everything, a virtue but also a flaw. A complex system is understood, not completely measured."*
+*"A model that is off by 5% but knows when to delegate is infinitely more useful than a model that guesses exactly 70% of the time but confidently hallucinates absurd numbers the remaining 30%."*

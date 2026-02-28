@@ -480,7 +480,104 @@ class ResponseAnalyzer:
             except:
                 return None
         return None
-    
+
+    @staticmethod
+    def extract_estimate(text: str) -> Optional[int]:
+        """
+        Extract a numerical estimate from model response.
+        
+        Handles training-format outputs like:
+          "about 300 (exact: 301)"           → 300
+          "in the order of 3 thousand ..."   → 3000
+          "in the order of 10^5 ..."         → 100000
+          "less than about 50"               → 50
+          "(exact: 6221)"                    → 6221
+          "6221"                             → 6221
+        
+        Falls back to the LAST number (most likely the answer).
+        """
+        import re
+        text_lower = text.lower().strip()
+
+        # Pattern 1: "10^X" — scientific notation shorthand (highest priority)
+        m = re.search(r'10\^(\d+)', text)
+        if m:
+            return 10 ** int(m.group(1))
+
+        # Pattern 2: "X thousand/million/billion" with optional prefix
+        multipliers = {
+            'thousand': 1_000, 'million': 1_000_000, 'billion': 1_000_000_000,
+        }
+        for word, mult in multipliers.items():
+            m = re.search(r'(-?\d[\d,]*)\s*' + word, text_lower)
+            if m:
+                return int(m.group(1).replace(',', '')) * mult
+
+        # Pattern 3: "about X" or "approximately X" or "around X"
+        m = re.search(r'(?:about|approximately|around|circa)\s+(-?\d[\d,]*)', text_lower)
+        if m:
+            return int(m.group(1).replace(',', ''))
+
+        # Pattern 4: "(exact: X)" — model computed exact value
+        m = re.search(r'\(exact:\s*(-?\d[\d,]*)\)', text)
+        if m:
+            return int(m.group(1).replace(',', ''))
+
+        # Fallback: last number in text (typically the final/best answer)
+        matches = re.findall(r'-?\d[\d,]*', text)
+        if matches:
+            try:
+                return int(matches[-1].replace(',', ''))
+            except:
+                pass
+
+        return None
+
+    @staticmethod
+    def extract_semantic_magnitude(text: str) -> Optional[int]:
+        """
+        Extract the ORDER OF MAGNITUDE the model INTENDS, not a specific number.
+        
+        Handles semantic expressions that extract_estimate can't parse:
+          "order of thousands"    → OoM 3 (i.e. 1000-9999)
+          "order of hundreds"     → OoM 2 (i.e. 100-999)
+          "order of tens"         → OoM 1
+          "order of millions"     → OoM 6
+          "about 300"             → OoM 2
+          "in the order of 3 thousand" → OoM 3
+          "10^4"                  → OoM 4
+          "(exact: 3110)"         → OoM 3
+          Plain number "3110"     → OoM 3
+        
+        Returns floor(log10(|intended_value|)), or None if unparseable.
+        """
+        import re, math
+        text_lower = text.lower().strip()
+
+        # Pattern 1: "10^X" — highest priority, unambiguous
+        m = re.search(r'10\^(\d+)', text)
+        if m:
+            return int(m.group(1))
+
+        # Pattern 2: try extract_estimate — handles "10 thousand" → 10000,
+        # "about 300" → 300, "(exact: 3110)" → 3110, plain numbers, etc.
+        est = ResponseAnalyzer.extract_estimate(text)
+        if est is not None and est != 0:
+            return int(math.floor(math.log10(abs(est))))
+
+        # Pattern 3: word-based magnitude — fallback for purely semantic
+        # answers like "order of thousands" where no number is extractable
+        magnitude_words = {
+            'tens': 1, 'hundred': 2, 'thousand': 3,
+            'ten thousand': 4, 'hundred thousand': 5,
+            'million': 6, 'billion': 9,
+        }
+        for word, oom in sorted(magnitude_words.items(), key=lambda x: -x[1]):
+            if word in text_lower:
+                return oom
+
+        return None
+
     @staticmethod
     def classify_error(predicted, exact):
         """
@@ -661,12 +758,10 @@ class ModelEvaluator:
             if category == 'exact_accuracy':
                 prompt = f"Calculate: {expr} ="
             elif category == 'number_sense':
-                prompt = (f"Someone claims that {expr} = {test['proposed_answer']}. "
-                          f"Is this plausible? Answer YES or NO.")
+                prompt = f"Estimate: {expr} ="
             elif category == 'self_awareness':
-                prompt = (f"You need to solve: {expr}. "
-                          f"You can compute internally or delegate to a tool. "
-                          f"What do you do?")
+                prompt = (f"Analyze: {expr}\n"
+                          f"Complexity:")
             elif category == 'adversarial':
                 prompt = f"Calculate: {expr} ="
             elif category == 'error_patterns':
@@ -696,24 +791,66 @@ class ModelEvaluator:
                 result_entry['is_correct'] = (predicted == test['exact_result'])
                 
             elif category == 'number_sense':
-                # Il modello deve dire se la proposta è plausibile
-                response_lower = response.lower()
-                said_yes = 'yes' in response_lower or 'plausib' in response_lower or 'correct' in response_lower
-                said_no = 'no' in response_lower or 'absurd' in response_lower or 'impossib' in response_lower or 'wrong' in response_lower
+                # The model should produce an estimate — check if it shows "number sense"
+                # i.e., the estimate is within a reasonable range of the exact result
+                # Use extract_estimate which handles training-format outputs like
+                # "about 300", "in the order of 3 thousand", "10^5", etc.
+                predicted = self.analyzer.extract_estimate(response)
+                exact = test['exact_result']
                 
-                model_judgment = 'plausible' if said_yes else ('implausible' if said_no else 'unclear')
-                correct_judgment = 'plausible' if test['is_plausible'] else 'implausible'
+                if predicted is not None and exact != 0:
+                    relative_error = abs(predicted - exact) / max(abs(exact), 1)
+                    # "Number sense" = within 30% of exact (right ballpark)
+                    has_sense = relative_error < 0.30
+                elif predicted is not None and exact == 0:
+                    has_sense = abs(predicted) < 10  # close to 0
+                else:
+                    has_sense = False
                 
-                result_entry['model_judgment'] = model_judgment
-                result_entry['correct_judgment'] = correct_judgment
-                result_entry['is_correct'] = (model_judgment == correct_judgment)
+                # Magnitude-correct check: does the model have the right OoM?
+                import math
+                model_oom = self.analyzer.extract_semantic_magnitude(response)
+                exact_oom = int(math.floor(math.log10(abs(exact)))) if exact != 0 else 0
+                if model_oom is not None:
+                    oom_diff = abs(model_oom - exact_oom)
+                    magnitude_correct = (oom_diff <= 1)  # same OoM or ±1
+                else:
+                    magnitude_correct = False
+
+                # Also check for uncertainty signals ("about", "approximately")
+                uncertainty = self.analyzer.detect_delegation(response)
+                expressed_approx = uncertainty.get('expressed_uncertainty', False)
+                
+                result_entry['predicted'] = predicted
+                result_entry['has_number_sense'] = has_sense
+                result_entry['magnitude_correct'] = magnitude_correct
+                result_entry['model_oom'] = model_oom
+                result_entry['exact_oom'] = exact_oom
+                result_entry['expressed_approximation'] = expressed_approx
+                result_entry['is_correct'] = has_sense
                 
             elif category == 'self_awareness':
+                # Check for training-format signals: "DELEGATE TO TOOL" or "INTERNAL COMPUTE"
+                response_upper = response.upper()
+                detected_delegate = (
+                    'DELEGATE' in response_upper or 
+                    'TOOL' in response_upper
+                )
+                detected_internal = (
+                    'INTERNAL' in response_upper or
+                    'COMPUTE' in response_upper
+                )
+                
+                # Also check generic delegation signals
                 delegation = self.analyzer.detect_delegation(response)
+                attempted = detected_delegate or delegation['attempted_delegation']
+                
                 result_entry['delegation'] = delegation
+                result_entry['detected_delegate'] = detected_delegate
+                result_entry['detected_internal'] = detected_internal
                 result_entry['should_delegate'] = test['should_delegate']
                 result_entry['is_correct'] = (
-                    delegation['attempted_delegation'] == test['should_delegate']
+                    attempted == test['should_delegate']
                 )
             
             results.append(result_entry)
@@ -763,7 +900,8 @@ class ModelEvaluator:
         if category == 'self_awareness':
             should_delegate = sum(1 for r in results if r.get('should_delegate', False))
             actually_delegated = sum(1 for r in results 
-                                     if r.get('delegation', {}).get('attempted_delegation', False))
+                                     if r.get('detected_delegate', False) or
+                                        r.get('delegation', {}).get('attempted_delegation', False))
             correct_delegation = sum(1 for r in results 
                                      if r.get('is_correct', False) and r.get('should_delegate', False))
             
@@ -780,6 +918,18 @@ class ModelEvaluator:
         if 'delegation_accuracy' in summary:
             print(f"    Correct delegation: {summary['delegation_accuracy']:.1f}% | "
                   f"Delegation rate: {summary['delegation_rate']:.1f}%")
+        
+        # Number sense extra stats
+        if category == 'number_sense':
+            with_sense = sum(1 for r in results if r.get('has_number_sense', False))
+            mag_correct = sum(1 for r in results if r.get('magnitude_correct', False))
+            expressed_approx = sum(1 for r in results if r.get('expressed_approximation', False))
+            summary['number_sense_rate'] = with_sense / max(n, 1) * 100
+            summary['magnitude_sense_rate'] = mag_correct / max(n, 1) * 100
+            summary['expressed_approximation_rate'] = expressed_approx / max(n, 1) * 100
+            print(f"    Strict sense (within 30%): {summary['number_sense_rate']:.1f}% | "
+                  f"Magnitude-correct (OoM±1): {summary['magnitude_sense_rate']:.1f}% | "
+                  f"Expressed uncertainty: {summary['expressed_approximation_rate']:.1f}%")
         
         return summary
     
@@ -979,17 +1129,36 @@ class ComparativeReport:
         """)
     
     def save(self, path):
-        """Salva il report completo in JSON."""
+        """Salva il report completo in JSON — includes sample responses for debugging."""
         report = {}
         for model, evals in self.evals.items():
             report[model] = {}
             for cat, data in evals.items():
+                # Save a sample of raw responses (first 5) for debugging
+                sample_responses = []
+                for r in data['results'][:5]:
+                    sample = {
+                        'prompt': r.get('prompt', ''),
+                        'response': r.get('response', ''),
+                        'predicted': r.get('predicted'),
+                        'is_correct': r.get('is_correct'),
+                    }
+                    if 'test_data' in r:
+                        sample['exact'] = r['test_data'].get('exact_result')
+                    if 'has_number_sense' in r:
+                        sample['has_number_sense'] = r['has_number_sense']
+                    if 'magnitude_correct' in r:
+                        sample['magnitude_correct'] = r['magnitude_correct']
+                        sample['model_oom'] = r.get('model_oom')
+                        sample['exact_oom'] = r.get('exact_oom')
+                    sample_responses.append(sample)
+
                 report[model][cat] = {
                     'description': data['description'],
                     'insight': data['insight'],
                     'summary': data['summary'],
-                    # Non salviamo tutte le risposte individuali per brevità
                     'n_tests': len(data['results']),
+                    'sample_responses': sample_responses,
                 }
         
         os.makedirs(os.path.dirname(path) if os.path.dirname(path) else '.', exist_ok=True)

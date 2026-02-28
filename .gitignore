@@ -1,15 +1,36 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
+
+# Virtual environments
 env/
 venv/
 .env
 .venv
-*.log
-.DS_Store
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model artifacts (too large for git)
 local_lora/
 *.pt
 *.safetensors
+*.bin
+*.gguf
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+.cache/
